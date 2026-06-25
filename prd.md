@@ -18,3 +18,16 @@ Aplikasi pengelolaan Anggota UKM POLIBAN
  10. Terdapat Fitur Export ke Excel
 
  
+
+ ## Desain HALAMAN
+ A. Halaman LOGIN : Email dan password
+B. Halaman Mahasiswa 
+ - CRUD Mahasiswa : NIM, NAMA, Jurusan dan Status Terdaftar (true or false) 
+ C. Halaman Unit Kegiatan Mahasiswa
+ - CRUD Mahasiswa : NAMA UKM dan deskripsi
+ D. Halaman Pendaftaran Anggota (Anggota UKM)
+ - CRUD  : NAMA Mahasiwa Dari Tabel Data mahasiswa, tanggal lahir  dan UKM dari tabel data ukm.
+
+
+ Note untuk akun 1 Akun Administrator saja.
+ 

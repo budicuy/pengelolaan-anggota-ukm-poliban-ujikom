@@ -1,0 +1,60 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("Administrator")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Mahasiswa {
+  nim          String        @id
+  nama         String
+  jurusan      String
+  anggota      Anggota?
+  pendaftaran  Pendaftaran[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model UKM {
+  id          String        @id
+  nama        String
+  anggota     Anggota[]
+  pendaftaran Pendaftaran[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Pendaftaran {
+  id            String    @id @default(uuid())
+  mahasiswaNim  String
+  mahasiswa     Mahasiswa @relation(fields: [mahasiswaNim], references: [nim], onDelete: Cascade)
+  ukmId         String
+  ukm           UKM       @relation(fields: [ukmId], references: [id], onDelete: Cascade)
+  tanggalDaftar DateTime  @default(now())
+  status        String    @default("Menunggu") // Menunggu, Disetujui, Ditolak
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Anggota {
+  id               String    @id @default(uuid())
+  mahasiswaNim     String    @unique
+  mahasiswa        Mahasiswa @relation(fields: [mahasiswaNim], references: [nim], onDelete: Cascade)
+  ukmId            String
+  ukm              UKM       @relation(fields: [ukmId], references: [id], onDelete: Cascade)
+  tanggalBergabung DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}

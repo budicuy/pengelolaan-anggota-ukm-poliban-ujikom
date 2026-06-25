@@ -41,6 +41,7 @@ export default function PendaftaranPage() {
   // Form states
   const [formDaftarNim, setFormDaftarNim] = useState("");
   const [formDaftarUkmId, setFormDaftarUkmId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadData = async () => {
     try {
@@ -85,6 +86,7 @@ export default function PendaftaranPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await createPendaftaran(formDaftarNim, formDaftarUkmId);
       setActiveModal(null);
@@ -95,10 +97,13 @@ export default function PendaftaranPage() {
       refreshStats();
     } catch (err: any) {
       showToast(err.message || "Gagal mengajukan pendaftaran", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleApprovePendaftaran = async (regId: string) => {
+    setIsSubmitting(true);
     try {
       await processPendaftaran(regId, "Approve");
       showToast("Pendaftaran anggota berhasil disetujui!");
@@ -106,10 +111,13 @@ export default function PendaftaranPage() {
       refreshStats();
     } catch (err: any) {
       showToast(err.message || "Gagal menyetujui pendaftaran", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleRejectPendaftaran = async (regId: string) => {
+    setIsSubmitting(true);
     try {
       await processPendaftaran(regId, "Reject");
       showToast("Pendaftaran anggota berhasil ditolak");
@@ -117,6 +125,8 @@ export default function PendaftaranPage() {
       refreshStats();
     } catch (err: any) {
       showToast(err.message || "Gagal menolak pendaftaran", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -206,7 +216,6 @@ export default function PendaftaranPage() {
           <table className="w-full text-left text-sm text-zinc-600">
             <thead className="bg-zinc-50 text-xs font-bold text-zinc-700 uppercase tracking-wider border-b border-zinc-200">
               <tr>
-                <th className="py-4.5 px-6">ID Reg</th>
                 <th className="py-4.5 px-6">NIM</th>
                 <th className="py-4.5 px-6">Nama Mahasiswa</th>
                 <th className="py-4.5 px-6">UKM yang Dituju</th>
@@ -219,7 +228,6 @@ export default function PendaftaranPage() {
               {getFilteredPendaftaran().length > 0 ? (
                 getFilteredPendaftaran().map((p) => (
                   <tr key={p.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-4.5 px-6 font-mono text-xs text-zinc-500">{p.id}</td>
                     <td className="py-4.5 px-6 font-mono text-xs text-zinc-900 font-bold">{p.nim}</td>
                     <td className="py-4.5 px-6 text-zinc-900 font-bold">{p.namaMahasiswa}</td>
                     <td className="py-4.5 px-6 text-rose-600 font-bold">{p.namaUKM}</td>
@@ -240,17 +248,19 @@ export default function PendaftaranPage() {
                         <div className="flex justify-end gap-1.5">
                           <button
                             onClick={() => handleApprovePendaftaran(p.id)}
-                            className="flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-2 py-1 text-xs font-bold text-emerald-700 transition cursor-pointer"
+                            disabled={isSubmitting}
+                            className="flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-2 py-1 text-xs font-bold text-emerald-700 transition cursor-pointer disabled:opacity-50"
                           >
                             <Check className="h-3.5 w-3.5" />
-                            <span>Setuju</span>
+                            <span>{isSubmitting ? "Memproses..." : "Setuju"}</span>
                           </button>
                           <button
                             onClick={() => handleRejectPendaftaran(p.id)}
-                            className="flex items-center gap-1 rounded bg-red-50 border border-red-200 hover:bg-red-600 hover:text-white px-2 py-1 text-xs font-bold text-red-700 transition cursor-pointer"
+                            disabled={isSubmitting}
+                            className="flex items-center gap-1 rounded bg-red-50 border border-red-200 hover:bg-red-600 hover:text-white px-2 py-1 text-xs font-bold text-red-700 transition cursor-pointer disabled:opacity-50"
                           >
                             <X className="h-3.5 w-3.5" />
-                            <span>Tolak</span>
+                            <span>{isSubmitting ? "Memproses..." : "Tolak"}</span>
                           </button>
                         </div>
                       ) : (
@@ -261,7 +271,7 @@ export default function PendaftaranPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-zinc-400">
+                  <td colSpan={6} className="py-12 text-center text-zinc-400">
                     Tidak ada data pendaftaran.
                   </td>
                 </tr>
@@ -332,9 +342,10 @@ export default function PendaftaranPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Daftarkan Anggota
+                  {isSubmitting ? "Mendaftarkan..." : "Daftarkan Anggota"}
                 </button>
               </div>
             </form>

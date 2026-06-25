@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useDashboard } from "../dashboard-context";
 import { getMahasiswaList, createMahasiswa, updateMahasiswa, deleteMahasiswa } from "@/actions/MahasiswaAction";
-import { Search, Plus, Printer, Download, Edit, Trash2, X, AlertCircle } from "lucide-react";
+import { Search, Plus, Printer, Download, Edit, Trash2, X, AlertCircle, AlertTriangle } from "lucide-react";
 
 interface Mahasiswa {
   nim: string;
@@ -12,11 +12,25 @@ interface Mahasiswa {
 }
 
 export default function MahasiswaPage() {
-  const { showDashboard, hasAccessToMahasiswaAndUkm, showToast, refreshStats } = useDashboard();
+  const { hasAccessToMahasiswaAndUkm, showToast, refreshStats } = useDashboard();
   const [mahasiswaList, setMahasiswaList] = useState<Mahasiswa[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeModal, setActiveModal] = useState<"addMahasiswa" | "editMahasiswa" | null>(null);
   const [selectedMahasiswa, setSelectedMahasiswa] = useState<Mahasiswa | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete confirmation modal states
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   // Form states
   const [formNim, setFormNim] = useState("");
@@ -60,6 +74,7 @@ export default function MahasiswaPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await createMahasiswa(formNim, formNama, formJurusan);
       setActiveModal(null);
@@ -69,6 +84,8 @@ export default function MahasiswaPage() {
       refreshStats();
     } catch (err: any) {
       showToast(err.message || "Gagal mendaftarkan mahasiswa", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -76,6 +93,7 @@ export default function MahasiswaPage() {
     e.preventDefault();
     if (!selectedMahasiswa) return;
 
+    setIsSubmitting(true);
     try {
       await updateMahasiswa(formNim, formNama, formJurusan);
       setActiveModal(null);
@@ -84,20 +102,31 @@ export default function MahasiswaPage() {
       loadData();
     } catch (err: any) {
       showToast(err.message || "Gagal memperbaharui data", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteMahasiswa = async (nim: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus data mahasiswa ini?")) {
-      try {
-        await deleteMahasiswa(nim);
-        showToast("Mahasiswa berhasil dihapus");
-        loadData();
-        refreshStats();
-      } catch (err: any) {
-        showToast(err.message || "Gagal menghapus mahasiswa", "error");
-      }
-    }
+  const handleDeleteMahasiswa = (nim: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: "Hapus Data Mahasiswa",
+      message: `Apakah Anda yakin ingin menghapus data mahasiswa dengan NIM ${nim}? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await deleteMahasiswa(nim);
+          showToast("Mahasiswa berhasil dihapus");
+          loadData();
+          refreshStats();
+        } catch (err: any) {
+          showToast(err.message || "Gagal menghapus mahasiswa", "error");
+        } finally {
+          setIsSubmitting(false);
+          setDeleteConfirm((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const openEditMahasiswa = (mhs: Mahasiswa) => {
@@ -310,9 +339,10 @@ export default function MahasiswaPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan Mahasiswa
+                  {isSubmitting ? "Menyimpan..." : "Simpan Mahasiswa"}
                 </button>
               </div>
             </form>
@@ -382,12 +412,44 @@ export default function MahasiswaPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan Perubahan
+                  {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Modal: Konfirmasi Hapus */}
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500 mb-4">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-900 mb-2">{deleteConfirm.title}</h3>
+            <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
+              {deleteConfirm.message}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-bold text-zinc-500 hover:bg-zinc-50 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={deleteConfirm.onConfirm}
+                disabled={isSubmitting}
+                className="rounded-lg bg-red-500 hover:bg-red-650 px-4 py-2 text-xs font-bold text-white transition cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {isSubmitting ? "Menghapus..." : "Ya, Hapus"}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -137,6 +137,7 @@ export async function processPendaftaran(id: string, action: "Approve" | "Reject
         data: {
           mahasiswaNim: reg.mahasiswaNim,
           ukmId: reg.ukmId,
+          tanggalDaftar: reg.tanggalDaftar,
         },
       });
 

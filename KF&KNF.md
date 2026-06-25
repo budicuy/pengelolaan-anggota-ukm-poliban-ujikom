@@ -41,7 +41,7 @@ Kebutuhan fungsional mendefinisikan layanan atau fungsi spesifik yang harus dise
     *   `Ditolak`: Pendaftaran diarsipkan dengan status ditolak tanpa dimasukkan ke tabel Anggota.
 
 ### KF-5: Manajemen Anggota UKM
-*   **KF-5.1**: Sistem harus menampilkan daftar anggota resmi masing-masing UKM beserta tanggal bergabungnya.
+*   **KF-5.1**: Sistem harus menampilkan daftar anggota resmi masing-masing UKM beserta tanggal pendaftarannya.
 *   **KF-5.2**: Administrator dapat menghapus anggota dari organisasi (mengeluarkan anggota).
 
 ### KF-6: Fitur Pencarian Data

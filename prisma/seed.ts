@@ -52,16 +52,16 @@ async function main() {
 
   // 3. Seed UKM
   await prisma.uKM.create({
-    data: { id: "UKM-001", nama: "Mapala Justitia" },
+    data: { id: "UKM-001", nama: "Mapala Justitia", deskripsi: "Unit Kegiatan Mahasiswa Pecinta Alam Justitia Politeknik Negeri Banjarmasin." },
   });
   await prisma.uKM.create({
-    data: { id: "UKM-002", nama: "UKM Seni & Budaya" },
+    data: { id: "UKM-002", nama: "UKM Seni & Budaya", deskripsi: "Wadah pengembangan minat dan bakat mahasiswa di bidang seni musik, tari, teater, dan seni rupa." },
   });
   await prisma.uKM.create({
-    data: { id: "UKM-003", nama: "UKM Robotika" },
+    data: { id: "UKM-003", nama: "UKM Robotika", deskripsi: "Fokus pada pengembangan teknologi otomasi, pemrograman mikrokontroler, dan kompetisi robotika tingkat nasional." },
   });
   await prisma.uKM.create({
-    data: { id: "UKM-004", nama: "UKM Olahraga" },
+    data: { id: "UKM-004", nama: "UKM Olahraga", deskripsi: "Mengembangkan potensi mahasiswa di bidang olahraga futsal, basket, voli, bulutangkis, dan catur." },
   });
   console.log("Created UKMs");
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useDashboard } from "../dashboard-context";
 import { getAnggotaList, deleteAnggota } from "@/actions/AnggotaAction";
-import { Search, Printer, Download, Trash2, AlertCircle } from "lucide-react";
+import { Search, Printer, Download, Trash2, AlertCircle, AlertTriangle } from "lucide-react";
 
 interface AnggotaUKM {
   nim: string;
@@ -11,13 +11,27 @@ interface AnggotaUKM {
   jurusan: string;
   ukmId: string;
   namaUKM: string;
-  tanggalBergabung: string;
+  tanggalDaftar: string;
 }
 
 export default function AnggotaPage() {
   const { hasAccessToAnggotaAndPendaftaran, showToast, refreshStats } = useDashboard();
   const [anggotaList, setAnggotaList] = useState<AnggotaUKM[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete confirmation modal states
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   const loadData = async () => {
     try {
@@ -49,17 +63,26 @@ export default function AnggotaPage() {
     );
   }
 
-  const handleDeleteAnggota = async (nim: string, ukmId: string) => {
-    if (confirm("Keluarkan mahasiswa ini dari UKM?")) {
-      try {
-        await deleteAnggota(nim, ukmId);
-        showToast("Anggota berhasil dikeluarkan dari UKM");
-        loadData();
-        refreshStats();
-      } catch (err: any) {
-        showToast(err.message || "Gagal mengeluarkan anggota", "error");
-      }
-    }
+  const handleDeleteAnggota = (nim: string, ukmId: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: "Keluarkan Anggota UKM",
+      message: `Apakah Anda yakin ingin mengeluarkan mahasiswa dengan NIM ${nim} dari UKM ${ukmId}?`,
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await deleteAnggota(nim, ukmId);
+          showToast("Anggota berhasil dikeluarkan dari UKM");
+          loadData();
+          refreshStats();
+        } catch (err: any) {
+          showToast(err.message || "Gagal mengeluarkan anggota", "error");
+        } finally {
+          setIsSubmitting(false);
+          setDeleteConfirm((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const getFilteredAnggota = () => {
@@ -77,8 +100,8 @@ export default function AnggotaPage() {
   };
 
   const exportToExcel = () => {
-    const headers = ["NIM", "Nama Mahasiswa", "Jurusan", "ID UKM", "Nama UKM", "Tanggal Bergabung"];
-    const rows = getFilteredAnggota().map((a) => [a.nim, a.namaMahasiswa, a.jurusan, a.ukmId, a.namaUKM, a.tanggalBergabung]);
+    const headers = ["NIM", "Nama Mahasiswa", "Jurusan", "ID UKM", "Nama UKM", "Tanggal Daftar"];
+    const rows = getFilteredAnggota().map((a) => [a.nim, a.namaMahasiswa, a.jurusan, a.ukmId, a.namaUKM, a.tanggalDaftar]);
     const filename = `data-anggota-${new Date().toISOString().split("T")[0]}.csv`;
 
     const csvContent =
@@ -152,7 +175,7 @@ export default function AnggotaPage() {
                 <th className="py-4.5 px-6">Nama Mahasiswa</th>
                 <th className="py-4.5 px-6">Jurusan</th>
                 <th className="py-4.5 px-6">Tergabung Di UKM</th>
-                <th className="py-4.5 px-6">Tanggal Bergabung</th>
+                <th className="py-4.5 px-6">Tanggal Daftar</th>
                 <th className="py-4.5 px-6 text-right print:hidden">Aksi</th>
               </tr>
             </thead>
@@ -166,7 +189,7 @@ export default function AnggotaPage() {
                     <td className="py-4.5 px-6">
                       <span className="text-rose-600 font-bold">{a.namaUKM}</span>
                     </td>
-                    <td className="py-4.5 px-6 text-xs">{a.tanggalBergabung}</td>
+                    <td className="py-4.5 px-6 text-xs">{a.tanggalDaftar}</td>
                     <td className="py-4.5 px-6 text-right print:hidden">
                       <button
                         onClick={() => handleDeleteAnggota(a.nim, a.ukmId)}
@@ -189,6 +212,37 @@ export default function AnggotaPage() {
           </table>
         </div>
       </div>
+      {/* Modal: Konfirmasi Hapus */}
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500 mb-4">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-900 mb-2">{deleteConfirm.title}</h3>
+            <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
+              {deleteConfirm.message}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-bold text-zinc-500 hover:bg-zinc-50 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={deleteConfirm.onConfirm}
+                disabled={isSubmitting}
+                className="rounded-lg bg-red-500 hover:bg-red-650 px-4 py-2 text-xs font-bold text-white transition cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {isSubmitting ? "Mengeluarkan..." : "Ya, Hapus"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

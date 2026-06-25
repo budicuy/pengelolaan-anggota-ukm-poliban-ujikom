@@ -14,11 +14,12 @@ export async function getUkmList() {
   return list.map((u) => ({
     id: u.id,
     nama: u.nama,
+    deskripsi: u.deskripsi,
     jumlahAnggota: u._count.anggota,
   }));
 }
 
-export async function createUkm(id: string, nama: string) {
+export async function createUkm(id: string, nama: string, deskripsi: string = "") {
   if (!id || !nama) {
     throw new Error("Semua field wajib diisi");
   }
@@ -29,7 +30,7 @@ export async function createUkm(id: string, nama: string) {
   }
 
   const ukm = await prisma.uKM.create({
-    data: { id, nama },
+    data: { id, nama, deskripsi },
   });
 
   return {
@@ -38,14 +39,14 @@ export async function createUkm(id: string, nama: string) {
   };
 }
 
-export async function updateUkm(id: string, nama: string) {
+export async function updateUkm(id: string, nama: string, deskripsi: string = "") {
   if (!id || !nama) {
     throw new Error("Semua field wajib diisi");
   }
 
   const updated = await prisma.uKM.update({
     where: { id },
-    data: { nama },
+    data: { nama, deskripsi },
   });
 
   const count = await prisma.anggota.count({ where: { ukmId: id } });

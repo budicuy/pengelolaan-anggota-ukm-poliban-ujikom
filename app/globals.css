@@ -24,3 +24,124 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  @page {
+    size: auto;
+    margin: 15mm 20mm;
+  }
+
+  /* Make sure everything under print has standard white/black colors */
+  html, body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Convert all layouts to block to ensure proper multi-page breaking */
+  .flex, main, div, section {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide elements with print:hidden */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Title / Header styles */
+  h1 {
+    font-size: 16pt !important;
+    font-weight: bold !important;
+    color: #000000 !important;
+    margin-bottom: 4px !important;
+    margin-top: 10px !important;
+    display: block !important;
+  }
+
+  p {
+    font-size: 10pt !important;
+    color: #333333 !important;
+    margin-bottom: 20px !important;
+    display: block !important;
+  }
+
+  /* Hide alert banners / info cards on print */
+  .bg-blue-50, .bg-red-50, .bg-amber-50, .bg-rose-50 {
+    display: none !important;
+  }
+
+  /* Table styling - Clean & Simple Grid */
+  table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+    background-color: #ffffff !important;
+    border: 1px solid #000000 !important;
+    page-break-inside: auto !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  th, td {
+    border: 1px solid #000000 !important;
+    padding: 8px 12px !important;
+    font-size: 10pt !important;
+    text-align: left !important;
+    color: #000000 !important;
+    background-color: transparent !important;
+  }
+
+  th {
+    font-weight: bold !important;
+    background-color: #f2f2f2 !important; /* light grey fill for header */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Alignments and specific styles */
+  .text-right {
+    text-align: right !important;
+  }
+
+  .text-center {
+    text-align: center !important;
+  }
+
+  .font-bold, [class*="font-bold"], td.font-bold, th.font-bold {
+    font-weight: bold !important;
+  }
+
+  /* Clean up status badges or customized colored spans/fonts to plain text */
+  span, a, font, .font-mono, [class*="font-mono"] {
+    color: #000000 !important;
+    background-color: transparent !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+

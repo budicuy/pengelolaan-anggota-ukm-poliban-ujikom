@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useDashboard } from "../dashboard-context";
 import { getUkmList, createUkm, updateUkm, deleteUkm } from "@/actions/UkmAction";
-import { Search, Plus, Printer, Download, Edit, Trash2, X, AlertCircle } from "lucide-react";
+import { Search, Plus, Printer, Download, Edit, Trash2, X, AlertCircle, AlertTriangle } from "lucide-react";
 
 interface UKM {
   id: string;
   nama: string;
+  deskripsi: string;
   jumlahAnggota: number;
 }
 
@@ -17,10 +18,25 @@ export default function UkmPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeModal, setActiveModal] = useState<"addUkm" | "editUkm" | null>(null);
   const [selectedUkm, setSelectedUkm] = useState<UKM | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete confirmation modal states
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   // Form states
   const [formUkmId, setFormUkmId] = useState("");
   const [formUkmNama, setFormUkmNama] = useState("");
+  const [formUkmDeskripsi, setFormUkmDeskripsi] = useState("");
 
   const loadData = async () => {
     try {
@@ -59,8 +75,9 @@ export default function UkmPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      await createUkm(formUkmId, formUkmNama);
+      await createUkm(formUkmId, formUkmNama, formUkmDeskripsi);
       setActiveModal(null);
       clearForm();
       showToast("Unit Kegiatan Mahasiswa berhasil ditambahkan");
@@ -68,6 +85,8 @@ export default function UkmPage() {
       refreshStats();
     } catch (err: any) {
       showToast(err.message || "Gagal menambahkan UKM", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -75,40 +94,54 @@ export default function UkmPage() {
     e.preventDefault();
     if (!selectedUkm) return;
 
+    setIsSubmitting(true);
     try {
-      await updateUkm(formUkmId, formUkmNama);
+      await updateUkm(formUkmId, formUkmNama, formUkmDeskripsi);
       setActiveModal(null);
       clearForm();
       showToast("Data UKM berhasil diperbaharui");
       loadData();
     } catch (err: any) {
       showToast(err.message || "Gagal mengupdate UKM", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteUkm = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus UKM ini beserta semua datanya?")) {
-      try {
-        await deleteUkm(id);
-        showToast("UKM berhasil dihapus");
-        loadData();
-        refreshStats();
-      } catch (err: any) {
-        showToast(err.message || "Gagal menghapus UKM", "error");
-      }
-    }
+  const handleDeleteUkm = (id: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: "Hapus Unit Kegiatan Mahasiswa",
+      message: `Apakah Anda yakin ingin menghapus UKM dengan Kode ${id} beserta seluruh datanya? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await deleteUkm(id);
+          showToast("UKM berhasil dihapus");
+          loadData();
+          refreshStats();
+        } catch (err: any) {
+          showToast(err.message || "Gagal menghapus UKM", "error");
+        } finally {
+          setIsSubmitting(false);
+          setDeleteConfirm((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const openEditUkm = (ukm: UKM) => {
     setSelectedUkm(ukm);
     setFormUkmId(ukm.id);
     setFormUkmNama(ukm.nama);
+    setFormUkmDeskripsi(ukm.deskripsi || "");
     setActiveModal("editUkm");
   };
 
   const clearForm = () => {
     setFormUkmId("");
     setFormUkmNama("");
+    setFormUkmDeskripsi("");
     setSelectedUkm(null);
   };
 
@@ -116,7 +149,8 @@ export default function UkmPage() {
     return ukmList.filter(
       (u) =>
         u.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.nama.toLowerCase().includes(searchQuery.toLowerCase())
+        u.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.deskripsi && u.deskripsi.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   };
 
@@ -125,8 +159,8 @@ export default function UkmPage() {
   };
 
   const exportToExcel = () => {
-    const headers = ["Kode UKM", "Nama UKM", "Jumlah Anggota"];
-    const rows = getFilteredUkm().map((u) => [u.id, u.nama, u.jumlahAnggota.toString()]);
+    const headers = ["Kode UKM", "Nama UKM", "Deskripsi", "Jumlah Anggota"];
+    const rows = getFilteredUkm().map((u) => [u.id, u.nama, u.deskripsi || "", u.jumlahAnggota.toString()]);
     const filename = `data-ukm-${new Date().toISOString().split("T")[0]}.csv`;
 
     const csvContent =
@@ -198,6 +232,7 @@ export default function UkmPage() {
               <tr>
                 <th className="py-4.5 px-6">Kode UKM</th>
                 <th className="py-4.5 px-6">Nama UKM</th>
+                <th className="py-4.5 px-6">Deskripsi</th>
                 <th className="py-4.5 px-6">Anggota Resmi</th>
                 <th className="py-4.5 px-6 text-right print:hidden">Aksi</th>
               </tr>
@@ -208,6 +243,7 @@ export default function UkmPage() {
                   <tr key={u.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="py-4.5 px-6 font-mono text-xs text-zinc-900 font-bold">{u.id}</td>
                     <td className="py-4.5 px-6 text-zinc-900 font-bold">{u.nama}</td>
+                    <td className="py-4.5 px-6 text-xs text-zinc-500 max-w-xs truncate" title={u.deskripsi}>{u.deskripsi || "-"}</td>
                     <td className="py-4.5 px-6 text-xs text-rose-600 font-extrabold">{u.jumlahAnggota} Mahasiswa</td>
                     <td className="py-4.5 px-6 text-right print:hidden">
                       <div className="flex justify-end gap-1.5">
@@ -231,7 +267,7 @@ export default function UkmPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center text-zinc-400">
+                  <td colSpan={5} className="py-12 text-center text-zinc-400">
                     Tidak ada data UKM ditemukan.
                   </td>
                 </tr>
@@ -279,6 +315,16 @@ export default function UkmPage() {
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-500 uppercase">Deskripsi UKM</label>
+                <textarea
+                  placeholder="Deskripsi singkat unit kegiatan mahasiswa"
+                  value={formUkmDeskripsi}
+                  onChange={(e) => setFormUkmDeskripsi(e.target.value)}
+                  rows={3}
+                  className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2.5 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none resize-none"
+                />
+              </div>
               <div className="flex gap-2 justify-end pt-4">
                 <button
                   type="button"
@@ -289,9 +335,10 @@ export default function UkmPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan UKM
+                  {isSubmitting ? "Menyimpan..." : "Simpan UKM"}
                 </button>
               </div>
             </form>
@@ -335,6 +382,16 @@ export default function UkmPage() {
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-500 uppercase">Deskripsi UKM</label>
+                <textarea
+                  placeholder="Deskripsi singkat unit kegiatan mahasiswa"
+                  value={formUkmDeskripsi}
+                  onChange={(e) => setFormUkmDeskripsi(e.target.value)}
+                  rows={3}
+                  className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2.5 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none resize-none"
+                />
+              </div>
               <div className="flex gap-2 justify-end pt-4">
                 <button
                   type="button"
@@ -345,12 +402,44 @@ export default function UkmPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan Perubahan
+                  {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Modal: Konfirmasi Hapus */}
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500 mb-4">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-900 mb-2">{deleteConfirm.title}</h3>
+            <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
+              {deleteConfirm.message}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-bold text-zinc-500 hover:bg-zinc-50 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={deleteConfirm.onConfirm}
+                disabled={isSubmitting}
+                className="rounded-lg bg-red-500 hover:bg-red-650 px-4 py-2 text-xs font-bold text-white transition cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {isSubmitting ? "Menghapus..." : "Ya, Hapus"}
+              </button>
+            </div>
           </div>
         </div>
       )}

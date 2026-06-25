@@ -30,6 +30,7 @@ model Mahasiswa {
 model UKM {
   id          String        @id
   nama        String
+  deskripsi   String        @default("")
   anggota     Anggota[]
   pendaftaran Pendaftaran[]
   createdAt   DateTime      @default(now())
@@ -54,7 +55,7 @@ model Anggota {
   mahasiswa        Mahasiswa @relation(fields: [mahasiswaNim], references: [nim], onDelete: Cascade)
   ukmId            String
   ukm              UKM       @relation(fields: [ukmId], references: [id], onDelete: Cascade)
-  tanggalBergabung DateTime  @default(now())
+  tanggalDaftar    DateTime  @default(now())
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }

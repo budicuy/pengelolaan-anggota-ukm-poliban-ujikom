@@ -310,12 +310,12 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 
         {/* Global Toast Notification */}
         {toast && (
-          <div className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-bottom-2 duration-300 ${
+          <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-top-2 duration-300 bg-zinc-900 border-zinc-800 text-white ${
             toast.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              ? "border-l-4 border-l-emerald-500"
               : toast.type === "error"
-              ? "bg-red-55 border-red-200 text-red-800"
-              : "bg-blue-50 border-blue-200 text-blue-800"
+              ? "border-l-4 border-l-red-500"
+              : "border-l-4 border-l-blue-500"
           }`}>
             <span>{toast.message}</span>
           </div>
@@ -503,12 +503,12 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 
       {/* Global Toast Notification */}
       {toast && (
-        <div className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-bottom-2 duration-300 ${
+        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-top-2 duration-300 bg-zinc-900 border-zinc-800 text-white ${
           toast.type === "success"
-            ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+            ? "border-l-4 border-l-emerald-500"
             : toast.type === "error"
-            ? "bg-red-50 border-red-200 text-red-800"
-            : "bg-blue-50 border-blue-200 text-blue-800"
+            ? "border-l-4 border-l-red-500"
+            : "border-l-4 border-l-blue-500"
         }`}>
           <span>{toast.message}</span>
         </div>

@@ -11,7 +11,7 @@ export async function getAnggotaList() {
         select: { nama: true },
       },
     },
-    orderBy: { tanggalBergabung: "desc" },
+    orderBy: { tanggalDaftar: "desc" },
   });
 
   return list.map((a) => ({
@@ -20,7 +20,7 @@ export async function getAnggotaList() {
     jurusan: a.mahasiswa.jurusan,
     ukmId: a.ukmId,
     namaUKM: a.ukm.nama,
-    tanggalBergabung: a.tanggalBergabung.toISOString().split("T")[0],
+    tanggalDaftar: a.tanggalDaftar.toISOString().split("T")[0],
   }));
 }
 

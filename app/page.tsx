@@ -31,6 +31,7 @@ import {
   Check,
   ChevronRight,
   TrendingUp,
+  AlertTriangle,
   AlertCircle
 } from "lucide-react";
 
@@ -46,6 +47,7 @@ interface Mahasiswa {
 interface UKM {
   id: string;
   nama: string;
+  deskripsi: string;
   jumlahAnggota: number;
 }
 
@@ -65,7 +67,7 @@ interface AnggotaUKM {
   jurusan: string;
   ukmId: string;
   namaUKM: string;
-  tanggalBergabung: string;
+  tanggalDaftar: string;
 }
 
 interface UserSession {
@@ -83,6 +85,7 @@ export default function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<UserSession | null>(null);
 
   // For forgot password modal
@@ -125,12 +128,26 @@ export default function App() {
 
   const [formUkmId, setFormUkmId] = useState("");
   const [formUkmNama, setFormUkmNama] = useState("");
+  const [formUkmDeskripsi, setFormUkmDeskripsi] = useState("");
 
   const [formDaftarNim, setFormDaftarNim] = useState("");
   const [formDaftarUkmId, setFormDaftarUkmId] = useState("");
 
   // Toast notifications
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  // Delete confirmation modal states
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (toast) {
@@ -247,6 +264,7 @@ export default function App() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await createMahasiswa(formNim, formNama, formJurusan);
       setActiveModal(null);
@@ -255,6 +273,8 @@ export default function App() {
       refreshData();
     } catch (err: any) {
       showToast(err.message || "Gagal mendaftarkan mahasiswa", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -262,6 +282,7 @@ export default function App() {
     e.preventDefault();
     if (!selectedMahasiswa) return;
 
+    setIsSubmitting(true);
     try {
       await updateMahasiswa(formNim, formNama, formJurusan);
       setActiveModal(null);
@@ -270,19 +291,30 @@ export default function App() {
       refreshData();
     } catch (err: any) {
       showToast(err.message || "Gagal memperbaharui data", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteMahasiswa = async (nim: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus data mahasiswa ini?")) {
-      try {
-        await deleteMahasiswa(nim);
-        showToast("Mahasiswa berhasil dihapus");
-        refreshData();
-      } catch (err: any) {
-        showToast(err.message || "Gagal menghapus mahasiswa", "error");
-      }
-    }
+  const handleDeleteMahasiswa = (nim: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: "Hapus Data Mahasiswa",
+      message: `Apakah Anda yakin ingin menghapus data mahasiswa dengan NIM ${nim}? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await deleteMahasiswa(nim);
+          showToast("Mahasiswa berhasil dihapus");
+          refreshData();
+        } catch (err: any) {
+          showToast(err.message || "Gagal menghapus mahasiswa", "error");
+        } finally {
+          setIsSubmitting(false);
+          setDeleteConfirm((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const openEditMahasiswa = (mhs: Mahasiswa) => {
@@ -310,14 +342,17 @@ export default function App() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      await createUkm(formUkmId, formUkmNama);
+      await createUkm(formUkmId, formUkmNama, formUkmDeskripsi);
       setActiveModal(null);
       clearUkmForm();
       showToast("Unit Kegiatan Mahasiswa berhasil ditambahkan");
       refreshData();
     } catch (err: any) {
       showToast(err.message || "Gagal menambahkan UKM", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -325,39 +360,53 @@ export default function App() {
     e.preventDefault();
     if (!selectedUkm) return;
 
+    setIsSubmitting(true);
     try {
-      await updateUkm(formUkmId, formUkmNama);
+      await updateUkm(formUkmId, formUkmNama, formUkmDeskripsi);
       setActiveModal(null);
       clearUkmForm();
       showToast("Data UKM berhasil diperbaharui");
       refreshData();
     } catch (err: any) {
       showToast(err.message || "Gagal mengupdate UKM", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteUkm = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus UKM ini beserta semua datanya?")) {
-      try {
-        await deleteUkm(id);
-        showToast("UKM berhasil dihapus");
-        refreshData();
-      } catch (err: any) {
-        showToast(err.message || "Gagal menghapus UKM", "error");
-      }
-    }
+  const handleDeleteUkm = (id: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: "Hapus Unit Kegiatan Mahasiswa",
+      message: `Apakah Anda yakin ingin menghapus UKM dengan Kode ${id} beserta seluruh datanya? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await deleteUkm(id);
+          showToast("UKM berhasil dihapus");
+          refreshData();
+        } catch (err: any) {
+          showToast(err.message || "Gagal menghapus UKM", "error");
+        } finally {
+          setIsSubmitting(false);
+          setDeleteConfirm((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const openEditUkm = (ukm: UKM) => {
     setSelectedUkm(ukm);
     setFormUkmId(ukm.id);
     setFormUkmNama(ukm.nama);
+    setFormUkmDeskripsi(ukm.deskripsi || "");
     setActiveModal("editUkm");
   };
 
   const clearUkmForm = () => {
     setFormUkmId("");
     setFormUkmNama("");
+    setFormUkmDeskripsi("");
     setSelectedUkm(null);
   };
 
@@ -371,6 +420,7 @@ export default function App() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await createPendaftaran(formDaftarNim, formDaftarUkmId);
       setActiveModal(null);
@@ -380,39 +430,56 @@ export default function App() {
       refreshData();
     } catch (err: any) {
       showToast(err.message || "Gagal mengajukan pendaftaran", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleApprovePendaftaran = async (regId: string) => {
+    setIsSubmitting(true);
     try {
       await processPendaftaran(regId, "Approve");
       showToast("Pendaftaran anggota berhasil disetujui!");
       refreshData();
     } catch (err: any) {
       showToast(err.message || "Gagal menyetujui pendaftaran", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleRejectPendaftaran = async (regId: string) => {
+    setIsSubmitting(true);
     try {
       await processPendaftaran(regId, "Reject");
       showToast("Pendaftaran anggota berhasil ditolak");
       refreshData();
     } catch (err: any) {
       showToast(err.message || "Gagal menolak pendaftaran", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteAnggota = async (nim: string, ukmId: string) => {
-    if (confirm("Keluarkan mahasiswa ini dari UKM?")) {
-      try {
-        await deleteAnggota(nim, ukmId);
-        showToast("Anggota berhasil dikeluarkan dari UKM");
-        refreshData();
-      } catch (err: any) {
-        showToast(err.message || "Gagal mengeluarkan anggota", "error");
-      }
-    }
+  const handleDeleteAnggota = (nim: string, ukmId: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: "Keluarkan Anggota UKM",
+      message: `Apakah Anda yakin ingin mengeluarkan mahasiswa dengan NIM ${nim} dari UKM ${ukmId}?`,
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          await deleteAnggota(nim, ukmId);
+          showToast("Anggota berhasil dikeluarkan dari UKM");
+          refreshData();
+        } catch (err: any) {
+          showToast(err.message || "Gagal mengeluarkan anggota", "error");
+        } finally {
+          setIsSubmitting(false);
+          setDeleteConfirm((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   // ==========================================
@@ -431,7 +498,8 @@ export default function App() {
     return ukmList.filter(
       (u) =>
         u.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.nama.toLowerCase().includes(searchQuery.toLowerCase())
+        u.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.deskripsi && u.deskripsi.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   };
 
@@ -471,14 +539,14 @@ export default function App() {
       headers = ["NIM", "Nama", "Jurusan"];
       rows = mahasiswaList.map((m) => [m.nim, m.nama, m.jurusan]);
     } else if (menuType === "ukm") {
-      headers = ["Kode UKM", "Nama UKM", "Jumlah Anggota"];
-      rows = ukmList.map((u) => [u.id, u.nama, u.jumlahAnggota.toString()]);
+      headers = ["Kode UKM", "Nama UKM", "Deskripsi", "Jumlah Anggota"];
+      rows = ukmList.map((u) => [u.id, u.nama, u.deskripsi || "", u.jumlahAnggota.toString()]);
     } else if (menuType === "pendaftaran") {
       headers = ["ID Registrasi", "NIM", "Nama Mahasiswa", "ID UKM", "Nama UKM", "Tanggal Daftar", "Status"];
       rows = pendaftaranList.map((p) => [p.id, p.nim, p.namaMahasiswa, p.ukmId, p.namaUKM, p.tanggalDaftar, p.status]);
     } else if (menuType === "anggota") {
-      headers = ["NIM", "Nama Mahasiswa", "Jurusan", "ID UKM", "Nama UKM", "Tanggal Bergabung"];
-      rows = anggotaList.map((a) => [a.nim, a.namaMahasiswa, a.jurusan, a.ukmId, a.namaUKM, a.tanggalBergabung]);
+      headers = ["NIM", "Nama Mahasiswa", "Jurusan", "ID UKM", "Nama UKM", "Tanggal Daftar"];
+      rows = anggotaList.map((a) => [a.nim, a.namaMahasiswa, a.jurusan, a.ukmId, a.namaUKM, a.tanggalDaftar]);
     }
 
     const csvContent =
@@ -774,12 +842,12 @@ export default function App() {
 
         {/* Global Toast Notification */}
         {toast && (
-          <div className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-bottom-2 duration-300 ${
+          <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-top-2 duration-300 bg-zinc-900 border-zinc-800 text-white ${
             toast.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              ? "border-l-4 border-l-emerald-500"
               : toast.type === "error"
-              ? "bg-red-50 border-red-200 text-red-800"
-              : "bg-blue-50 border-blue-200 text-blue-800"
+              ? "border-l-4 border-l-red-500"
+              : "border-l-4 border-l-blue-500"
           }`}>
             <span>{toast.message}</span>
           </div>
@@ -1193,6 +1261,7 @@ export default function App() {
                       <tr>
                         <th className="py-4.5 px-6">Kode UKM</th>
                         <th className="py-4.5 px-6">Nama UKM</th>
+                        <th className="py-4.5 px-6">Deskripsi</th>
                         <th className="py-4.5 px-6">Anggota Resmi</th>
                         <th className="py-4.5 px-6 text-right print:hidden">Aksi</th>
                       </tr>
@@ -1203,6 +1272,7 @@ export default function App() {
                           <tr key={u.id} className="hover:bg-zinc-50/50 transition-colors">
                             <td className="py-4.5 px-6 font-mono text-xs text-zinc-900 font-bold">{u.id}</td>
                             <td className="py-4.5 px-6 text-zinc-900 font-bold">{u.nama}</td>
+                            <td className="py-4.5 px-6 text-xs text-zinc-500 max-w-xs truncate" title={u.deskripsi}>{u.deskripsi || "-"}</td>
                             <td className="py-4.5 px-6 text-xs text-rose-600 font-extrabold">{u.jumlahAnggota} Mahasiswa</td>
                             <td className="py-4.5 px-6 text-right print:hidden">
                               <div className="flex justify-end gap-1.5">
@@ -1226,7 +1296,7 @@ export default function App() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="py-12 text-center text-zinc-400">
+                          <td colSpan={5} className="py-12 text-center text-zinc-400">
                             Tidak ada data UKM ditemukan.
                           </td>
                         </tr>
@@ -1293,7 +1363,6 @@ export default function App() {
                   <table className="w-full text-left text-sm text-zinc-600">
                     <thead className="bg-zinc-50 text-xs font-bold text-zinc-700 uppercase tracking-wider border-b border-zinc-200">
                       <tr>
-                        <th className="py-4.5 px-6">ID Reg</th>
                         <th className="py-4.5 px-6">NIM</th>
                         <th className="py-4.5 px-6">Nama Mahasiswa</th>
                         <th className="py-4.5 px-6">UKM yang Dituju</th>
@@ -1306,7 +1375,6 @@ export default function App() {
                       {getFilteredPendaftaran().length > 0 ? (
                         getFilteredPendaftaran().map((p) => (
                           <tr key={p.id} className="hover:bg-zinc-50/50 transition-colors">
-                            <td className="py-4.5 px-6 font-mono text-xs text-zinc-505">{p.id}</td>
                             <td className="py-4.5 px-6 font-mono text-xs text-zinc-900 font-bold">{p.nim}</td>
                             <td className="py-4.5 px-6 text-zinc-900 font-bold">{p.namaMahasiswa}</td>
                             <td className="py-4.5 px-6 text-rose-600 font-bold">{p.namaUKM}</td>
@@ -1327,19 +1395,21 @@ export default function App() {
                                 <div className="flex justify-end gap-1.5">
                                   <button
                                     onClick={() => handleApprovePendaftaran(p.id)}
-                                    className="flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-2 py-1 text-xs font-bold text-emerald-700 transition cursor-pointer"
+                                    disabled={isSubmitting}
+                                    className="flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-2 py-1 text-xs font-bold text-emerald-700 transition cursor-pointer disabled:opacity-50"
                                   >
                                     <Check className="h-3.5 w-3.5" />
-                                    <span>Setuju</span>
+                                    <span>{isSubmitting ? "Memproses..." : "Setuju"}</span>
                                   </button>
                                   <button
                                     onClick={() => handleRejectPendaftaran(p.id)}
-                                    className="flex items-center gap-1 rounded bg-red-50 border border-red-200 hover:bg-red-600 hover:text-white px-2 py-1 text-xs font-bold text-red-700 transition cursor-pointer"
+                                    disabled={isSubmitting}
+                                    className="flex items-center gap-1 rounded bg-red-50 border border-red-200 hover:bg-red-650 hover:text-white px-2 py-1 text-xs font-bold text-red-700 transition cursor-pointer disabled:opacity-50"
                                   >
                                     <X className="h-3.5 w-3.5" />
-                                    <span>Tolak</span>
+                                    <span>{isSubmitting ? "Memproses..." : "Tolak"}</span>
                                   </button>
-                                </div>
+                                  </div>
                               ) : (
                                 <span className="text-xs text-zinc-400 font-bold">Sudah Diproses</span>
                               )}
@@ -1348,7 +1418,7 @@ export default function App() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={7} className="py-12 text-center text-zinc-400">
+                          <td colSpan={6} className="py-12 text-center text-zinc-400">
                             Tidak ada data pendaftaran.
                           </td>
                         </tr>
@@ -1420,7 +1490,7 @@ export default function App() {
                         <th className="py-4.5 px-6">Nama Mahasiswa</th>
                         <th className="py-4.5 px-6">Jurusan</th>
                         <th className="py-4.5 px-6">Tergabung Di UKM</th>
-                        <th className="py-4.5 px-6">Tanggal Bergabung</th>
+                        <th className="py-4.5 px-6">Tanggal Daftar</th>
                         <th className="py-4.5 px-6 text-right print:hidden">Aksi</th>
                       </tr>
                     </thead>
@@ -1434,7 +1504,7 @@ export default function App() {
                             <td className="py-4.5 px-6">
                               <span className="text-rose-600 font-bold">{a.namaUKM}</span>
                             </td>
-                            <td className="py-4.5 px-6 text-xs">{a.tanggalBergabung}</td>
+                            <td className="py-4.5 px-6 text-xs">{a.tanggalDaftar}</td>
                             <td className="py-4.5 px-6 text-right print:hidden">
                               <button
                                 onClick={() => handleDeleteAnggota(a.nim, a.ukmId)}
@@ -1527,9 +1597,10 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan Mahasiswa
+                  {isSubmitting ? "Menyimpan..." : "Simpan Mahasiswa"}
                 </button>
               </div>
             </form>
@@ -1599,9 +1670,10 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan Perubahan
+                  {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>
@@ -1647,6 +1719,16 @@ export default function App() {
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-500 uppercase">Deskripsi UKM</label>
+                <textarea
+                  placeholder="Deskripsi singkat unit kegiatan mahasiswa"
+                  value={formUkmDeskripsi}
+                  onChange={(e) => setFormUkmDeskripsi(e.target.value)}
+                  rows={3}
+                  className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2.5 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none resize-none"
+                />
+              </div>
               <div className="flex gap-2 justify-end pt-4">
                 <button
                   type="button"
@@ -1657,9 +1739,10 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan UKM
+                  {isSubmitting ? "Menyimpan..." : "Simpan UKM"}
                 </button>
               </div>
             </form>
@@ -1703,6 +1786,16 @@ export default function App() {
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-500 uppercase">Deskripsi UKM</label>
+                <textarea
+                  placeholder="Deskripsi singkat unit kegiatan mahasiswa"
+                  value={formUkmDeskripsi}
+                  onChange={(e) => setFormUkmDeskripsi(e.target.value)}
+                  rows={3}
+                  className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2.5 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none resize-none"
+                />
+              </div>
               <div className="flex gap-2 justify-end pt-4">
                 <button
                   type="button"
@@ -1713,9 +1806,10 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Simpan Perubahan
+                  {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>
@@ -1784,9 +1878,10 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-xs font-bold text-white hover:opacity-90 transition cursor-pointer disabled:opacity-50"
                 >
-                  Daftarkan Anggota
+                  {isSubmitting ? "Mendaftarkan..." : "Daftarkan Anggota"}
                 </button>
               </div>
             </form>
@@ -1794,14 +1889,46 @@ export default function App() {
         </div>
       )}
 
+      {/* Modal: Konfirmasi Hapus */}
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500 mb-4">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-900 mb-2">{deleteConfirm.title}</h3>
+            <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
+              {deleteConfirm.message}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-bold text-zinc-500 hover:bg-zinc-50 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={deleteConfirm.onConfirm}
+                disabled={isSubmitting}
+                className="rounded-lg bg-red-500 hover:bg-red-650 px-4 py-2 text-xs font-bold text-white transition cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {isSubmitting ? "Menghapus..." : "Ya, Hapus"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Global Toast Notification */}
       {toast && (
-        <div className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-bottom-2 duration-300 ${
+        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg border text-sm animate-in slide-in-from-top-2 duration-300 bg-zinc-900 border-zinc-800 text-white ${
           toast.type === "success"
-            ? "bg-emerald-50 border-emerald-250 text-emerald-800"
+            ? "border-l-4 border-l-emerald-500"
             : toast.type === "error"
-            ? "bg-red-50 border-red-200 text-red-800"
-            : "bg-blue-50 border-blue-200 text-blue-800"
+            ? "border-l-4 border-l-red-500"
+            : "border-l-4 border-l-blue-500"
         }`}>
           <span>{toast.message}</span>
         </div>

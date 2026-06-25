@@ -161,6 +161,18 @@ export default function App() {
     }
   };
 
+  // Load session from localStorage on mount
+  useEffect(() => {
+    const savedSession = localStorage.getItem("userSession");
+    if (savedSession) {
+      try {
+        setUser(JSON.parse(savedSession));
+      } catch (err) {
+        console.error("Gagal memuat sesi:", err);
+      }
+    }
+  }, []);
+
   // Load database content when user logs in
   useEffect(() => {
     if (user) {
@@ -198,6 +210,7 @@ export default function App() {
       if (!res.ok) {
         setError(data.error || "Email atau kata sandi salah");
       } else {
+        localStorage.setItem("userSession", JSON.stringify(data));
         setUser(data);
         showToast(`Selamat datang kembali, ${data.name}!`);
       }
@@ -209,6 +222,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("userSession");
     setUser(null);
     setEmail("");
     setPassword("");

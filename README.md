@@ -30,19 +30,19 @@ Sistem Informasi Manajemen UKM (SIM UKM) dirancang untuk memusatkan seluruh data
 
 Berdasarkan hasil analisis masalah, dilakukan perancangan kebutuhan fungsional sistem, diagram kasus penggunaan (use case), arsitektur database relasional, dan desain antarmuka.
 
-### A. Kebutuhan Fungsional (KF) & Non-Fungsional (KFN)
+### A. Kebutuhan Fungsional  & Non-Fungsional 
 
-#### 1. Kebutuhan Fungsional (KF)
-*   **KF-1: Sistem Otentikasi & Akun Tunggal (Single Role)**
-*   **KF-2: Data Mahasiswa (CRUD)**
-*   **KF-3: Data Unit Kegiatan Mahasiswa (UKM)**
-*   **KF-4: Proses Pendaftaran Anggota Baru**
-*   **KF-5: Manajemen Anggota UKM**
-*   **KF-6: Fitur Pencarian Data**
-*   **KF-7: Cetak Laporan (Print Data)**
-*   **KF-8: Ekspor Data ke Excel/CSV**
+#### 1. Kebutuhan Fungsional
+*   **1: Sistem Otentikasi & Akun Tunggal (Single Role)**
+*   **2: Data Mahasiswa (CRUD)**
+*   **3: Data Unit Kegiatan Mahasiswa (UKM)**
+*   **4: Proses Pendaftaran Anggota Baru**
+*   **5: Manajemen Anggota UKM**
+*   **6: Fitur Pencarian Data**
+*   **7: Cetak Laporan (Print Data)**
+*   **8: Ekspor Data ke Excel/CSV**
 
-#### 2. Kebutuhan Non-Fungsional (KFN)
+#### 2. Kebutuhan Non-Fungsional
 *   **1: Antarmuka Yang Responsive**
 
 ---
@@ -58,15 +58,15 @@ flowchart LR
     admin["👤 Administrator"]
 
     subgraph SIM_UKM_POLIBAN["SIM UKM POLIBAN"]
-        UC1(["UC-1: Login Sistem"])
-        UC2(["UC-2: Mengelola Mahasiswa (CRUD)"])
-        UC3(["UC-3: Mengelola UKM (CRUD)"])
-        UC4(["UC-4: Mengelola Pendaftaran Anggota"])
-        UC5(["UC-5: Mengelola Anggota UKM"])
-        UC6(["UC-6: Pencarian Data"])
-        UC7(["UC-7: Cetak Laporan (Print)"])
-        UC8(["UC-8: Ekspor CSV"])
-        UC9(["UC-9: Logout"])
+        UC1(["Login Sistem"])
+        UC2(["Mengelola Mahasiswa (CRUD)"])
+        UC3(["Mengelola UKM (CRUD)"])
+        UC4(["Mengelola Pendaftaran Anggota"])
+        UC5(["Mengelola Anggota UKM"])
+        UC6(["Pencarian Data"])
+        UC7(["Cetak Laporan (Print)"])
+        UC8(["Ekspor CSV"])
+        UC9(["Logout"])
     end
 
     admin --> UC1
@@ -87,10 +87,10 @@ flowchart LR
 ```
 
 #### 3. Skenario Utama Kasus Penggunaan
-*   **UC-1: Login Sistem**: Masuk memakai email `admin@poliban.ac.id` & sandi `admin123`. Sesi login disimpan ke `localStorage`.
-*   **UC-2: Tambah Mahasiswa**: Memasukkan NIM, Nama Lengkap, Jurusan. Sistem memvalidasi keunikan NIM sebelum disimpan.
-*   **UC-4: Persetujuan Pendaftaran**: Mengubah status pendaftaran ke `Disetujui` dan secara otomatis memasukkan mahasiswa sebagai anggota baru secara atomic (transaksional).
-*   **UC-8: Ekspor CSV (Excel)**: Mengonversi data visual aktif ke format spreadsheet `.csv` dengan membuang kolom kelas & email secara dinamis.
+*   **1: Login Sistem**: Masuk memakai email `admin@poliban.ac.id` & sandi `admin123`. Sesi login disimpan ke `localStorage`.
+*   **2: Tambah Mahasiswa**: Memasukkan NIM, Nama Lengkap, Jurusan. Sistem memvalidasi keunikan NIM sebelum disimpan.
+*   **4: Persetujuan Pendaftaran**: Mengubah status pendaftaran ke `Disetujui` dan secara otomatis memasukkan mahasiswa sebagai anggota baru secara atomic (transaksional).
+*   **8: Ekspor CSV (Excel)**: Mengonversi data visual aktif ke format spreadsheet `.csv` dengan membuang kolom kelas & email secara dinamis.
 
 ---
 
@@ -131,7 +131,7 @@ erDiagram
         date tanggalDaftar
     }
 
-    MAHASISWA ||--o| ANGGOTA : "1-to-1 (Aturan PRD 7)"
+    MAHASISWA ||--o| ANGGOTA : "1-to-1"
     MAHASISWA ||--o{ PENDAFTARAN : "1-to-Many"
     UKM ||--o{ ANGGOTA : "1-to-Many"
     UKM ||--o{ PENDAFTARAN : "1-to-Many"

@@ -127,7 +127,7 @@ export async function processPendaftaran(id: string, action: "Approve" | "Reject
     }
 
     // Execute transaction: update registration status + add to Anggota
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const updatedReg = await tx.pendaftaran.update({
         where: { id },
         data: { status: "Disetujui" },

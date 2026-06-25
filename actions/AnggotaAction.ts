@@ -14,7 +14,7 @@ export async function getAnggotaList() {
     orderBy: { tanggalDaftar: "desc" },
   });
 
-  return list.map((a) => ({
+  return list.map((a: any) => ({
     nim: a.mahasiswaNim,
     namaMahasiswa: a.mahasiswa.nama,
     jurusan: a.mahasiswa.jurusan,

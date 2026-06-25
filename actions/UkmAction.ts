@@ -11,7 +11,7 @@ export async function getUkmList() {
     orderBy: { createdAt: "desc" },
   });
 
-  return list.map((u) => ({
+  return list.map((u: any) => ({
     id: u.id,
     nama: u.nama,
     deskripsi: u.deskripsi,

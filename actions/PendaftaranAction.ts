@@ -14,7 +14,7 @@ export async function getPendaftaranList() {
     orderBy: { createdAt: "desc" },
   });
 
-  return list.map((p) => ({
+  return list.map((p: any) => ({
     id: p.id,
     nim: p.mahasiswaNim,
     namaMahasiswa: p.mahasiswa.nama,

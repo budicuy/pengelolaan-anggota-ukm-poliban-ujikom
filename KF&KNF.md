@@ -9,12 +9,9 @@ Dokumen ini menjelaskan spesifikasi kebutuhan sistem untuk Aplikasi Pengelolaan 
 
 Kebutuhan fungsional mendefinisikan layanan atau fungsi spesifik yang harus disediakan oleh aplikasi.
 
-### KF-1: Sistem Otentikasi & Multi-Role (Otorisasi)
+### KF-1: Sistem Otentikasi & Akun Tunggal (Single Role)
 *   **KF-1.1**: Sistem harus menyediakan halaman masuk (*Login*) dengan menggunakan alamat email dan kata sandi (*password*).
-*   **KF-1.2**: Sistem harus membatasi hak akses fungsionalitas berdasarkan peran (*role-based access control* / RBAC):
-    *   **Administrator**: Hak akses penuh (melihat, menambah, mengubah, menghapus) pada seluruh menu: Mahasiswa, UKM, Pendaftaran, dan Anggota.
-    *   **Wakil Direktur 3** & **Kepala Bagian Akademik**: Hak akses untuk mengelola data Mahasiswa, mengelola data UKM, serta melihat pendaftaran dan anggota.
-    *   **Ketua/Sekretaris UKM**: Hak akses khusus untuk memverifikasi pendaftaran anggota baru (menyetujui atau menolak) dan mengelola keanggotaan UKM yang dipimpinnya.
+*   **KF-1.2**: Sistem hanya memiliki peran tunggal yaitu **Administrator** yang memegang kontrol penuh atas semua menu (Mahasiswa, UKM, Pendaftaran, dan Anggota).
 
 ### KF-2: Manajemen Data Mahasiswa (CRUD)
 *   **KF-2.1**: Sistem harus dapat menampilkan daftar mahasiswa resmi POLIBAN.
@@ -39,13 +36,13 @@ Kebutuhan fungsional mendefinisikan layanan atau fungsi spesifik yang harus dise
     *   Hanya mahasiswa yang **terdaftar resmi** di sistem yang bisa didaftarkan.
     *   **Aturan Satu Mahasiswa Satu UKM**: Sistem harus memvalidasi agar satu mahasiswa tidak dapat diterima di lebih dari satu UKM aktif (relasi 1-to-1 di tingkat data Anggota).
 *   **KF-4.3**: Pendaftaran anggota baru memiliki status awal `Menunggu` persetujuan.
-*   **KF-4.4**: Perwakilan UKM (Ketua/Sekretaris UKM) dapat memverifikasi status pendaftaran dengan opsi:
+*   **KF-4.4**: Administrator dapat memverifikasi status pendaftaran dengan opsi:
     *   `Disetujui`: Sistem secara otomatis memasukkan mahasiswa tersebut ke tabel `Anggota` (relasi atomic).
     *   `Ditolak`: Pendaftaran diarsipkan dengan status ditolak tanpa dimasukkan ke tabel Anggota.
 
 ### KF-5: Manajemen Anggota UKM
 *   **KF-5.1**: Sistem harus menampilkan daftar anggota resmi masing-masing UKM beserta tanggal bergabungnya.
-*   **KF-5.2**: Administrator atau Ketua UKM dapat menghapus anggota dari organisasi (mengeluarkan anggota).
+*   **KF-5.2**: Administrator dapat menghapus anggota dari organisasi (mengeluarkan anggota).
 
 ### KF-6: Fitur Pencarian Data
 *   **KF-6.1**: Sistem harus menyediakan kotak pencarian global pada setiap tabel data.

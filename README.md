@@ -55,7 +55,7 @@ erDiagram
 ```
 
 ### Rincian Tabel:
-1. **`User`**: Menyimpan kredensial akun untuk login administrator, wakil direktur, kabag akademik, dan ketua UKM.
+1. **`User`**: Menyimpan kredensial akun untuk login administrator.
 2. **`Mahasiswa`**: Basis data mahasiswa resmi yang terdaftar di Politeknik.
 3. **`UKM`**: Daftar Unit Kegiatan Mahasiswa yang aktif dan diakui.
 4. **`Pendaftaran`**: Menyimpan pengajuan permohonan gabung UKM oleh mahasiswa dengan status `Menunggu`, `Disetujui`, atau `Ditolak`.
@@ -64,14 +64,11 @@ erDiagram
 ---
 
 ## 🔑 Akun Uji Coba (Seeder Credentials)
-Setelah menjalankan seeder, Anda dapat mengetik manual kredensial berikut untuk menguji pembagian hak akses (role-based access) sesuai aturan PRD:
+Setelah menjalankan seeder, Anda dapat login menggunakan kredensial tunggal berikut:
 
 | Peran (Role) | Email | Sandi | Otoritas Hak Akses |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@poliban.ac.id` | `admin123` | **Akses Penuh**: Kelola penuh Mahasiswa, UKM, Pendaftaran, dan Anggota. |
-| **Wakil Direktur 3** | `wadir3@poliban.ac.id` | `wadir3123` | **Mahasiswa & UKM**: Pendaftaran & kelola mahasiswa/UKM. (Tidak akses menu Anggota). |
-| **Kabag Akademik** | `kabag.akademik@poliban.ac.id` | `kabag123` | **Mahasiswa & UKM**: Pendaftaran & kelola mahasiswa/UKM. (Tidak akses menu Anggota). |
-| **Ketua UKM** | `ketuaukm@poliban.ac.id` | `ukm123` | **Pendaftaran & Anggota**: Verifikasi persetujuan (Setuju/Tolak) pendaftaran anggota baru. |
+| **Administrator** | `admin@poliban.ac.id` | `admin123` | **Akses Penuh**: Memiliki kontrol penuh atas pengelolaan data Mahasiswa, UKM, Pendaftaran, dan Anggota. |
 
 ---
 
@@ -127,12 +124,9 @@ Buka browser di alamat [http://localhost:3000](http://localhost:3000).
 
 ### 1. Kebutuhan Fungsional (KF)
 
-*   **KF-1: Sistem Otentikasi & Multi-Role (Otorisasi)**
+*   **KF-1: Sistem Otentikasi & Akun Tunggal (Single Role)**
     *   **KF-1.1**: Halaman masuk (*Login*) email & password.
-    *   **KF-1.2**: Pembatasan hak akses peran (*Role-Based Access Control*):
-        *   **Administrator**: Hak akses penuh (CRUD) pada seluruh menu.
-        *   **Wakil Direktur 3 & Kabag Akademik**: Kelola Mahasiswa & UKM.
-        *   **Ketua/Sekretaris UKM**: Verifikasi pendaftaran & list anggota UKM.
+    *   **KF-1.2**: Peran tunggal yaitu **Administrator** yang memegang kendali penuh atas semua menu (Mahasiswa, UKM, Pendaftaran, dan Anggota).
 *   **KF-2: Manajemen Data Mahasiswa (CRUD)**
     *   **KF-2.1**: Tampil list mahasiswa POLIBAN.
     *   **KF-2.2**: Tambah mahasiswa baru (NIM, Nama Lengkap, Jurusan).

@@ -120,3 +120,121 @@ Buka browser di alamat [http://localhost:3000](http://localhost:3000).
 - **Persetujuan Transaksional**: Persetujuan pendaftaran menggunakan Prisma transaction (`$transaction`) untuk membuat data `Anggota` baru secara aman dan atomic.
 - **Ekspor Excel (CSV)**: Menyediakan download data instan untuk laporan.
 - **Cetak Laporan**: Layanan print ramah cetak (`window.print()`).
+
+---
+
+## 📋 Spesifikasi Kebutuhan Fungsional (KF) & Non-Fungsional (KFN)
+
+### 1. Kebutuhan Fungsional (KF)
+
+*   **KF-1: Sistem Otentikasi & Multi-Role (Otorisasi)**
+    *   **KF-1.1**: Halaman masuk (*Login*) email & password.
+    *   **KF-1.2**: Pembatasan hak akses peran (*Role-Based Access Control*):
+        *   **Administrator**: Hak akses penuh (CRUD) pada seluruh menu.
+        *   **Wakil Direktur 3 & Kabag Akademik**: Kelola Mahasiswa & UKM.
+        *   **Ketua/Sekretaris UKM**: Verifikasi pendaftaran & list anggota UKM.
+*   **KF-2: Manajemen Data Mahasiswa (CRUD)**
+    *   **KF-2.1**: Tampil list mahasiswa POLIBAN.
+    *   **KF-2.2**: Tambah mahasiswa baru (NIM, Nama Lengkap, Jurusan).
+    *   **KF-2.3**: Update nama lengkap & jurusan. NIM permanen.
+    *   **KF-2.4**: Hapus data mahasiswa (*Cascade delete*).
+*   **KF-3: Manajemen Unit Kegiatan Mahasiswa (UKM)**
+    *   **KF-3.1**: Tampil list organisasi UKM POLIBAN.
+    *   **KF-3.2**: Daftarkan UKM baru (Kode UKM, Nama UKM).
+    *   **KF-3.3**: Update nama UKM.
+    *   **KF-3.4**: Hapus data UKM.
+*   **KF-4: Proses Pendaftaran Anggota Baru**
+    *   **KF-4.1**: Pengajuan pendaftaran mahasiswa ke salah satu UKM.
+    *   **KF-4.2**: Validasi transaksional (Mahasiswa harus terdaftar resmi & aturan 1 mahasiswa maks 1 UKM).
+    *   **KF-4.3**: Pendaftaran anggota baru berstatus awal `Menunggu`.
+    *   **KF-4.4**: Verifikasi status pendaftaran (Setuju/Tolak).
+*   **KF-5: Manajemen Anggota UKM**
+    *   **KF-5.1**: Tampil list anggota resmi beserta tanggal bergabungnya.
+    *   **KF-5.2**: Pengeluaran mahasiswa dari keanggotaan UKM.
+*   **KF-6: Fitur Pencarian Data**
+    *   **KF-6.1**: Kotak pencarian global di setiap tabel data.
+    *   **KF-6.2**: Pencarian mahasiswa berdasarkan NIM, Nama, atau Jurusan.
+*   **KF-7: Cetak Laporan (Print Data)**
+    *   **KF-7.1**: Fungsi print layout ramah kertas untuk mencetak rekapitulasi data.
+*   **KF-8: Ekspor Data ke Excel/CSV**
+    *   **KF-8.1**: Tombol ekspor instan data rekapitulasi ke format spreadsheet `.csv`.
+
+### 2. Kebutuhan Non-Fungsional (KFN)
+
+*   **KFN-1: Antarmuka & Estetika Visual (Usability)**
+    *   **KFN-1.1**: Desain antarmuka warna terang (*light theme*) dengan gradasi merah-oranye-amber.
+    *   **KFN-1.2**: Desain web responsif (*mobile-friendly*).
+    *   **KFN-1.3**: Animasi mikro (*transition* & *hover effects*) pada tombol.
+*   **KFN-2: Kinerja & Efisiensi (Performance)**
+    *   **KFN-2.1**: Waktu muat halaman pertama di bawah 2 detik.
+    *   **KFN-2.2**: Optimasi query database Neon PostgreSQL serverless.
+    *   **KFN-2.3**: Pencarian tabel dilakukan secara instan di sisi klien.
+*   **KFN-3: Keamanan Data & Sistem (Security)**
+    *   **KFN-3.1**: Dasbor dilindungi session login.
+    *   **KFN-3.2**: Kata sandi terenkripsi & tersimpan aman.
+    *   **KFN-3.3**: Kotak dialog konfirmasi pada penghapusan data penting.
+*   **KFN-4: Ketersediaan & Skalabilitas (Reliability & Scalability)**
+    *   **KFN-4.1**: Arsitektur serverless scalable Next.js + Neon DB.
+    *   **KFN-4.2**: Penggunaan Prisma `$transaction` menjamin konsistensi transaksi (atomic).
+
+---
+
+## 🗺️ Spesifikasi Kasus Penggunaan (Use Case Specification)
+
+### 1. Identifikasi Aktor
+- **Administrator**: Aktor tunggal pengelola sistem dengan hak akses penuh.
+
+### 2. Use Case Diagram (Mermaid)
+```mermaid
+flowchart LR
+    admin["👤 Administrator"]
+
+    subgraph SIM_UKM_POLIBAN["SIM UKM POLIBAN"]
+        UC1(["UC-1: Login Sistem"])
+        UC2(["UC-2: Mengelola Mahasiswa (CRUD)"])
+        UC3(["UC-3: Mengelola UKM (CRUD)"])
+        UC4(["UC-4: Mengelola Pendaftaran Anggota"])
+        UC5(["UC-5: Mengelola Anggota UKM"])
+        UC6(["UC-6: Pencarian Data"])
+        UC7(["UC-7: Cetak Laporan (Print)"])
+        UC8(["UC-8: Ekspor CSV"])
+        UC9(["UC-9: Logout"])
+    end
+
+    admin --> UC1
+    admin --> UC2
+    admin --> UC3
+    admin --> UC4
+    admin --> UC5
+    admin --> UC6
+    admin --> UC7
+    admin --> UC8
+    admin --> UC9
+
+    classDef actor fill:#ffe0b2,stroke:#fb8c00,stroke-width:2px,color:#000;
+    classDef usecase fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000;
+    class admin actor;
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9 usecase;
+    style SIM_UKM_POLIBAN fill:#f9f9f9,stroke:#666,stroke-width:2px
+```
+
+### 3. Skenario Utama Kasus Penggunaan
+- **UC-1: Login Sistem**: Masuk memakai email `admin@poliban.ac.id` & sandi `admin123`. Sesi login disimpan ke `localStorage`.
+- **UC-2: Tambah Mahasiswa**: Memasukkan NIM, Nama Lengkap, Jurusan. Sistem memvalidasi keunikan NIM sebelum disimpan.
+- **UC-4: Persetujuan Pendaftaran**: Mengubah status pendaftaran ke `Disetujui` dan secara otomatis memasukkan mahasiswa sebagai anggota baru secara atomic (transaksional).
+- **UC-8: Ekspor CSV (Excel)**: Mengonversi data visual aktif ke format spreadsheet `.csv` dengan membuang kolom kelas & email secara dinamis.
+
+---
+
+## 📊 Hasil Pengujian Black-Box (Black-Box Testing)
+
+| NO | Kebutuhan fungsional yang di uji | Keterangan (Berhasil / tidak) |
+| :--- | :--- | :--- |
+| 1 | **Login dan autentikasi**<br>• Melakukan masuk sistem (*login*) menggunakan email administrator (`admin@poliban.ac.id`) dan password (`admin123`).<br>• Validasi kesalahan input email/password.<br>• Menyimpan status login di `localStorage` agar tidak keluar saat halaman di-refresh. | **Berhasil** |
+| 2 | **Manajemen Data Mahasiswa**<br>• Menampilkan list data mahasiswa resmi dari database Neon.<br>• Menambahkan mahasiswa baru (input NIM, Nama Lengkap, Jurusan).<br>• Memvalidasi agar NIM tidak boleh duplikat.<br>• Mengubah data nama dan jurusan mahasiswa.<br>• Menghapus data mahasiswa. | **Berhasil** |
+| 3 | **Manajemen Unit Kegiatan Mahasiswa**<br>• Menampilkan list data organisasi UKM.<br>• Menambahkan UKM baru (input Kode UKM, Nama UKM).<br>• Memvalidasi agar Kode UKM tidak boleh duplikat.<br>• Mengubah data nama UKM.<br>• Menghapus data organisasi UKM. | **Berhasil** |
+| 4 | **Pendaftaran Anggota UKM**<br>• Mendaftarkan mahasiswa ke salah satu UKM aktif.<br>• Memvalidasi agar mahasiswa yang belum terdaftar tidak bisa didaftarkan.<br>• Memvalidasi agar mahasiswa yang sudah aktif di UKM lain tidak bisa mendaftar lagi.<br>• Memvalidasi status pendaftaran awal adalah `Menunggu`.<br>• Menyetujui (*Approve*) atau Menolak (*Reject*) pendaftaran. | **Berhasil** |
+| 5 | **Manajemen Anggota UKM**<br>• Menampilkan list anggota resmi per UKM secara detail.<br>• Mengeluarkan mahasiswa dari keanggotaan UKM (*delete membership*). | **Berhasil** |
+| 6 | **Fitur Pencarian**<br>• Mencari data mahasiswa berdasarkan NIM, Nama, atau Jurusan secara real-time.<br>• Mencari data organisasi UKM berdasarkan Kode atau Nama UKM.<br>• Mencari data pendaftaran berdasarkan status atau nama mahasiswa/UKM.<br>• Mencari data anggota aktif. | **Berhasil** |
+| 7 | **Fitur Cetak Laporan PDF**<br>• Mencetak halaman tabel/laporan rekapitulasi data menggunakan tata letak cetak ramah kertas (*print preview* browser).<br>• Menyimpan cetakan secara langsung ke format file PDF. | **Berhasil** |
+| 8 | **Fitur Export ke Excel**<br>• Mengunduh (*export*) seluruh tabel data (mahasiswa, UKM, pendaftaran, atau anggota aktif) ke format spreadsheet (.csv/Excel).<br>• Memastikan file CSV yang diunduh terformat dengan rapi dan tidak mengandung kolom kelas/email mahasiswa yang sudah dihapus. | **Berhasil** |

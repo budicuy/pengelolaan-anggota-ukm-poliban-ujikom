@@ -321,7 +321,6 @@ export default function MahasiswaPage() {
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 >
                   <option value="">-- Pilih Jurusan --</option>
-                  <option value="Teknik Informatika">Teknik Informatika</option>
                   <option value="Teknik Elektro">Teknik Elektro</option>
                   <option value="Akuntansi">Akuntansi</option>
                   <option value="Administrasi Bisnis">Administrasi Bisnis</option>
@@ -394,7 +393,6 @@ export default function MahasiswaPage() {
                   required
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 >
-                  <option value="Teknik Informatika">Teknik Informatika</option>
                   <option value="Teknik Elektro">Teknik Elektro</option>
                   <option value="Akuntansi">Akuntansi</option>
                   <option value="Administrasi Bisnis">Administrasi Bisnis</option>

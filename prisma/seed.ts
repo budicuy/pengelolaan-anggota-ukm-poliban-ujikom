@@ -67,9 +67,6 @@ async function main() {
 
   // 4. Seed Mahasiswa
   await prisma.mahasiswa.create({
-    data: { nim: "E020323001", nama: "Muhammad Rafli", jurusan: "Teknik Informatika" },
-  });
-  await prisma.mahasiswa.create({
     data: { nim: "E020323002", nama: "Siti Aminah", jurusan: "Akuntansi" },
   });
   await prisma.mahasiswa.create({
@@ -77,9 +74,6 @@ async function main() {
   });
   await prisma.mahasiswa.create({
     data: { nim: "E020323004", nama: "Aulia Rahman", jurusan: "Administrasi Bisnis" },
-  });
-  await prisma.mahasiswa.create({
-    data: { nim: "E020323005", nama: "Riza Fahlevi", jurusan: "Teknik Informatika" },
   });
   await prisma.mahasiswa.create({
     data: { nim: "E020323006", nama: "Fitriani", jurusan: "Teknik Sipil" },

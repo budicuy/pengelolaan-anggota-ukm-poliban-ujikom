@@ -13,6 +13,7 @@ interface Pendaftaran {
   namaMahasiswa: string;
   ukmId: string;
   namaUKM: string;
+  jabatan: string;
   tanggalDaftar: string;
   status: string;
 }
@@ -41,6 +42,7 @@ export default function PendaftaranPage() {
   // Form states
   const [formDaftarNim, setFormDaftarNim] = useState("");
   const [formDaftarUkmId, setFormDaftarUkmId] = useState("");
+  const [formDaftarJabatan, setFormDaftarJabatan] = useState("Anggota");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadData = async () => {
@@ -81,17 +83,18 @@ export default function PendaftaranPage() {
 
   const handleAddPendaftaran = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formDaftarNim || !formDaftarUkmId) {
-      showToast("Pilih mahasiswa dan UKM terlebih dahulu", "error");
+    if (!formDaftarNim || !formDaftarUkmId || !formDaftarJabatan) {
+      showToast("Pilih mahasiswa, UKM, dan jabatan terlebih dahulu", "error");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await createPendaftaran(formDaftarNim, formDaftarUkmId);
+      await createPendaftaran(formDaftarNim, formDaftarUkmId, formDaftarJabatan);
       setActiveModal(null);
       setFormDaftarNim("");
       setFormDaftarUkmId("");
+      setFormDaftarJabatan("Anggota");
       showToast("Pendaftaran anggota baru berhasil diajukan");
       loadData();
       refreshStats();
@@ -146,8 +149,8 @@ export default function PendaftaranPage() {
   };
 
   const exportToExcel = () => {
-    const headers = ["ID Registrasi", "NIM", "Nama Mahasiswa", "ID UKM", "Nama UKM", "Tanggal Daftar", "Status"];
-    const rows = getFilteredPendaftaran().map((p) => [p.id, p.nim, p.namaMahasiswa, p.ukmId, p.namaUKM, p.tanggalDaftar, p.status]);
+    const headers = ["ID Registrasi", "NIM", "Nama Mahasiswa", "ID UKM", "Nama UKM", "Jabatan", "Tanggal Daftar", "Status"];
+    const rows = getFilteredPendaftaran().map((p) => [p.id, p.nim, p.namaMahasiswa, p.ukmId, p.namaUKM, p.jabatan, p.tanggalDaftar, p.status]);
     const filename = `data-pendaftaran-${new Date().toISOString().split("T")[0]}.csv`;
 
     const csvContent =
@@ -219,6 +222,7 @@ export default function PendaftaranPage() {
                 <th className="py-4.5 px-6">NIM</th>
                 <th className="py-4.5 px-6">Nama Mahasiswa</th>
                 <th className="py-4.5 px-6">UKM yang Dituju</th>
+                <th className="py-4.5 px-6">Jabatan</th>
                 <th className="py-4.5 px-6">Tanggal Daftar</th>
                 <th className="py-4.5 px-6 text-center">Status</th>
                 <th className="py-4.5 px-6 text-right print:hidden">Verifikasi Pimpinan UKM</th>
@@ -231,6 +235,7 @@ export default function PendaftaranPage() {
                     <td className="py-4.5 px-6 font-mono text-xs text-zinc-900 font-bold">{p.nim}</td>
                     <td className="py-4.5 px-6 text-zinc-900 font-bold">{p.namaMahasiswa}</td>
                     <td className="py-4.5 px-6 text-rose-600 font-bold">{p.namaUKM}</td>
+                    <td className="py-4.5 px-6 font-semibold text-zinc-800">{p.jabatan}</td>
                     <td className="py-4.5 px-6 text-xs">{p.tanggalDaftar}</td>
                     <td className="py-4.5 px-6 text-center">
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
@@ -257,7 +262,7 @@ export default function PendaftaranPage() {
                           <button
                             onClick={() => handleRejectPendaftaran(p.id)}
                             disabled={isSubmitting}
-                            className="flex items-center gap-1 rounded bg-red-50 border border-red-200 hover:bg-red-600 hover:text-white px-2 py-1 text-xs font-bold text-red-700 transition cursor-pointer disabled:opacity-50"
+                            className="flex items-center gap-1 rounded bg-red-50 border border-red-200 hover:bg-red-650 hover:text-white px-2 py-1 text-xs font-bold text-red-700 transition cursor-pointer disabled:opacity-50"
                           >
                             <X className="h-3.5 w-3.5" />
                             <span>{isSubmitting ? "Memproses..." : "Tolak"}</span>
@@ -271,7 +276,7 @@ export default function PendaftaranPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-zinc-400">
+                  <td colSpan={7} className="py-12 text-center text-zinc-400">
                     Tidak ada data pendaftaran.
                   </td>
                 </tr>
@@ -327,6 +332,21 @@ export default function PendaftaranPage() {
                       {u.id} - {u.nama}
                     </option>
                   ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-500 uppercase">Pilih Jabatan</label>
+                <select
+                  value={formDaftarJabatan}
+                  onChange={(e) => setFormDaftarJabatan(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2.5 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
+                >
+                  <option value="Anggota">Anggota</option>
+                  <option value="Ketua">Ketua</option>
+                  <option value="Sekretaris">Sekretaris</option>
+                  <option value="Bendahara">Bendahara</option>
+                  <option value="Wakil Ketua">Wakil Ketua</option>
                 </select>
               </div>
               <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200 text-[11px] text-zinc-500 leading-normal">

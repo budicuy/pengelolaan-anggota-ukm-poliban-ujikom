@@ -43,6 +43,7 @@ model Pendaftaran {
   mahasiswa     Mahasiswa @relation(fields: [mahasiswaNim], references: [nim], onDelete: Cascade)
   ukmId         String
   ukm           UKM       @relation(fields: [ukmId], references: [id], onDelete: Cascade)
+  jabatan       String    @default("Anggota")
   tanggalDaftar DateTime  @default(now())
   status        String    @default("Menunggu") // Menunggu, Disetujui, Ditolak
   createdAt     DateTime  @default(now())
@@ -55,6 +56,7 @@ model Anggota {
   mahasiswa     Mahasiswa @relation(fields: [mahasiswaNim], references: [nim], onDelete: Cascade)
   ukmId         String
   ukm           UKM       @relation(fields: [ukmId], references: [id], onDelete: Cascade)
+  jabatan       String    @default("Anggota")
   tanggalDaftar DateTime  @default(now())
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

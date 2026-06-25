@@ -56,6 +56,7 @@ interface Pendaftaran {
   namaMahasiswa: string;
   ukmId: string;
   namaUKM: string;
+  jabatan: string;
   tanggalDaftar: string;
   status: "Menunggu" | "Disetujui" | "Ditolak" | string;
 }
@@ -66,6 +67,7 @@ interface AnggotaUKM {
   jurusan: string;
   ukmId: string;
   namaUKM: string;
+  jabatan: string;
   tanggalDaftar: string;
 }
 
@@ -131,6 +133,7 @@ export default function App() {
 
   const [formDaftarNim, setFormDaftarNim] = useState("");
   const [formDaftarUkmId, setFormDaftarUkmId] = useState("");
+  const [formDaftarJabatan, setFormDaftarJabatan] = useState("Anggota");
 
   // Toast notifications
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
@@ -414,17 +417,18 @@ export default function App() {
   // ==========================================
   const handleAddPendaftaran = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formDaftarNim || !formDaftarUkmId) {
-      showToast("Pilih mahasiswa dan UKM terlebih dahulu", "error");
+    if (!formDaftarNim || !formDaftarUkmId || !formDaftarJabatan) {
+      showToast("Pilih mahasiswa, UKM, dan jabatan terlebih dahulu", "error");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await createPendaftaran(formDaftarNim, formDaftarUkmId);
+      await createPendaftaran(formDaftarNim, formDaftarUkmId, formDaftarJabatan);
       setActiveModal(null);
       setFormDaftarNim("");
       setFormDaftarUkmId("");
+      setFormDaftarJabatan("Anggota");
       showToast("Pendaftaran anggota baru berhasil diajukan");
       refreshData();
     } catch (err: any) {
@@ -1028,8 +1032,8 @@ export default function App() {
           {activeMenu === "dashboard" && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-2xl font-extrabold tracking-tight text-zinc-900">Ringkasan Sistem (Database Active)</h1>
-                <p className="text-sm text-zinc-500 mt-1">Data terbaru dari Neon Database PostgreSQL.</p>
+                <h1 className="text-2xl font-extrabold tracking-tight text-zinc-900">Ringkasan Sistem</h1>
+                <p className="text-sm text-zinc-500 mt-1">Ringkasan Data terbaru dari SIM UKM POLIBAN</p>
               </div>
 
               {/* Statistics Row */}
@@ -1073,30 +1077,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Roles Info Box */}
-              <div className="bg-white rounded-xl border border-zinc-200 p-6 space-y-4 shadow-sm">
-                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-                  <Shield className="h-4.5 w-4.5 text-red-600" />
-                  Struktur Otoritas Akun & Validasi Prisma
-                </h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">
-                  Data saat ini didukung oleh database relational PostgreSQL pada Neon Database. Relasi data diikat secara kuat melalui Prisma ORM:
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                  <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
-                    <span className="text-xs font-bold text-red-600 block mb-1">Administrator</span>
-                    <p className="text-[11px] text-zinc-600 leading-relaxed">Akun pengelola utama yang tersimpan pada tabel `User` di database. Memiliki hak akses penuh terhadap seluruh operasi database.</p>
-                  </div>
-                  <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
-                    <span className="text-xs font-bold text-orange-600 block mb-1">Relasi Tabel Kuat</span>
-                    <p className="text-[11px] text-zinc-600 leading-relaxed">Tabel `Mahasiswa` dan `UKM` terelasi ke `Pendaftaran` (Foreign Key). Saat pendaftaran disetujui, relasi `Anggota` dibuat secara atomic.</p>
-                  </div>
-                  <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
-                    <span className="text-xs font-bold text-amber-600 block mb-1">Validasi Unik (PRD-7)</span>
-                    <p className="text-[11px] text-zinc-600 leading-relaxed">Relasi 1-to-1 unik antara `Mahasiswa` dan `Anggota` memastikan mahasiswa hanya diperbolehkan bergabung ke dalam maksimal 1 UKM.</p>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -1210,7 +1190,7 @@ export default function App() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-extrabold tracking-tight text-zinc-900">Daftar UKM Terdaftar</h1>
+                  <h1 className="text-2xl font-extrabold tracking-tight text-zinc-900">PENDAFTARAAN UKM DI POLIBAN</h1>
                   <p className="text-sm text-zinc-500 mt-1">Daftar Unit Kegiatan Mahasiswa resmi di Politeknik Negeri Banjarmasin.</p>
                 </div>
                 <div className="flex items-center gap-2 print:hidden">
@@ -1365,6 +1345,7 @@ export default function App() {
                         <th className="py-4.5 px-6">NIM</th>
                         <th className="py-4.5 px-6">Nama Mahasiswa</th>
                         <th className="py-4.5 px-6">UKM yang Dituju</th>
+                        <th className="py-4.5 px-6">Jabatan</th>
                         <th className="py-4.5 px-6">Tanggal Daftar</th>
                         <th className="py-4.5 px-6 text-center">Status</th>
                         <th className="py-4.5 px-6 text-right print:hidden">Verifikasi Pimpinan UKM</th>
@@ -1377,6 +1358,7 @@ export default function App() {
                             <td className="py-4.5 px-6 font-mono text-xs text-zinc-900 font-bold">{p.nim}</td>
                             <td className="py-4.5 px-6 text-zinc-900 font-bold">{p.namaMahasiswa}</td>
                             <td className="py-4.5 px-6 text-rose-600 font-bold">{p.namaUKM}</td>
+                            <td className="py-4.5 px-6 font-semibold text-zinc-800">{p.jabatan}</td>
                             <td className="py-4.5 px-6 text-xs">{p.tanggalDaftar}</td>
                             <td className="py-4.5 px-6 text-center">
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
@@ -1417,7 +1399,7 @@ export default function App() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={6} className="py-12 text-center text-zinc-400">
+                          <td colSpan={7} className="py-12 text-center text-zinc-400">
                             Tidak ada data pendaftaran.
                           </td>
                         </tr>
@@ -1457,14 +1439,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Alert reminder of Rule 7 */}
-              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3.5 text-xs text-blue-700 flex gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-blue-505" />
-                <span>
-                  <strong>Informasi Aturan (PRD-7):</strong> Setiap anggota yang terdaftar wajib merupakan mahasiswa aktif yang terdaftar resmi, dan 1 mahasiswa hanya boleh tergabung dalam 1 Unit Kegiatan Mahasiswa (UKM).
-                </span>
-              </div>
-
               {/* Search Bar */}
               <div className="relative print:hidden">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -1489,6 +1463,7 @@ export default function App() {
                         <th className="py-4.5 px-6">Nama Mahasiswa</th>
                         <th className="py-4.5 px-6">Jurusan</th>
                         <th className="py-4.5 px-6">Tergabung Di UKM</th>
+                        <th className="py-4.5 px-6">Jabatan</th>
                         <th className="py-4.5 px-6">Tanggal Daftar</th>
                         <th className="py-4.5 px-6 text-right print:hidden">Aksi</th>
                       </tr>
@@ -1503,6 +1478,7 @@ export default function App() {
                             <td className="py-4.5 px-6">
                               <span className="text-rose-600 font-bold">{a.namaUKM}</span>
                             </td>
+                            <td className="py-4.5 px-6 font-semibold text-zinc-800">{a.jabatan}</td>
                             <td className="py-4.5 px-6 text-xs">{a.tanggalDaftar}</td>
                             <td className="py-4.5 px-6 text-right print:hidden">
                               <button
@@ -1517,7 +1493,7 @@ export default function App() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={6} className="py-12 text-center text-zinc-400">
+                          <td colSpan={7} className="py-12 text-center text-zinc-400">
                             Belum ada anggota resmi yang terdaftar.
                           </td>
                         </tr>
@@ -1578,7 +1554,6 @@ export default function App() {
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 >
                   <option value="">-- Pilih Jurusan --</option>
-                  <option value="Teknik Informatika">Teknik Informatika</option>
                   <option value="Teknik Elektro">Teknik Elektro</option>
                   <option value="Akuntansi">Akuntansi</option>
                   <option value="Administrasi Bisnis">Administrasi Bisnis</option>
@@ -1651,7 +1626,6 @@ export default function App() {
                   required
                   className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
                 >
-                  <option value="Teknik Informatika">Teknik Informatika</option>
                   <option value="Teknik Elektro">Teknik Elektro</option>
                   <option value="Akuntansi">Akuntansi</option>
                   <option value="Administrasi Bisnis">Administrasi Bisnis</option>
@@ -1862,6 +1836,21 @@ export default function App() {
                       {u.id} - {u.nama}
                     </option>
                   ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-500 uppercase">Pilih Jabatan</label>
+                <select
+                  value={formDaftarJabatan}
+                  onChange={(e) => setFormDaftarJabatan(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-lg border border-zinc-200 bg-zinc-50 py-2.5 px-3 text-sm text-zinc-900 focus:border-red-500 outline-none"
+                >
+                  <option value="Anggota">Anggota</option>
+                  <option value="Ketua">Ketua</option>
+                  <option value="Sekretaris">Sekretaris</option>
+                  <option value="Bendahara">Bendahara</option>
+                  <option value="Wakil Ketua">Wakil Ketua</option>
                 </select>
               </div>
               <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200 text-[11px] text-zinc-550 leading-normal">

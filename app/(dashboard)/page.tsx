@@ -55,30 +55,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Roles Info Box */}
-      <div className="bg-white rounded-xl border border-zinc-200 p-6 space-y-4 shadow-sm">
-        <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-          <Shield className="h-4.5 w-4.5 text-red-600" />
-          Struktur Otoritas Akun & Validasi Prisma
-        </h3>
-        <p className="text-xs text-zinc-500 leading-relaxed">
-          Data saat ini didukung oleh database relational PostgreSQL pada Neon Database. Relasi data diikat secara kuat melalui Prisma ORM:
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-          <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
-            <span className="text-xs font-bold text-red-600 block mb-1">Administrator</span>
-            <p className="text-[11px] text-zinc-600 leading-relaxed">Akun pengelola utama yang tersimpan pada tabel `User` di database. Memiliki hak akses penuh terhadap seluruh operasi database.</p>
-          </div>
-          <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
-            <span className="text-xs font-bold text-orange-600 block mb-1">Relasi Tabel Kuat</span>
-            <p className="text-[11px] text-zinc-600 leading-relaxed">Tabel `Mahasiswa` dan `UKM` terelasi ke `Pendaftaran` (Foreign Key). Saat pendaftaran disetujui, relasi `Anggota` dibuat secara atomic.</p>
-          </div>
-          <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
-            <span className="text-xs font-bold text-amber-600 block mb-1">Validasi Unik (PRD-7)</span>
-            <p className="text-[11px] text-zinc-600 leading-relaxed">Relasi 1-to-1 unik antara `Mahasiswa` and `Anggota` memastikan mahasiswa hanya diperbolehkan bergabung ke dalam maksimal 1 UKM.</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

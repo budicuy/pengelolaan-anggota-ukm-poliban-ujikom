@@ -20,6 +20,7 @@ export async function getAnggotaList() {
     jurusan: a.mahasiswa.jurusan,
     ukmId: a.ukmId,
     namaUKM: a.ukm.nama,
+    jabatan: a.jabatan,
     tanggalDaftar: a.tanggalDaftar.toISOString().split("T")[0],
   }));
 }

@@ -11,6 +11,7 @@ interface AnggotaUKM {
   jurusan: string;
   ukmId: string;
   namaUKM: string;
+  jabatan: string;
   tanggalDaftar: string;
 }
 
@@ -100,8 +101,8 @@ export default function AnggotaPage() {
   };
 
   const exportToExcel = () => {
-    const headers = ["NIM", "Nama Mahasiswa", "Jurusan", "ID UKM", "Nama UKM", "Tanggal Daftar"];
-    const rows = getFilteredAnggota().map((a) => [a.nim, a.namaMahasiswa, a.jurusan, a.ukmId, a.namaUKM, a.tanggalDaftar]);
+    const headers = ["NIM", "Nama Mahasiswa", "Jurusan", "ID UKM", "Nama UKM", "Jabatan", "Tanggal Daftar"];
+    const rows = getFilteredAnggota().map((a) => [a.nim, a.namaMahasiswa, a.jurusan, a.ukmId, a.namaUKM, a.jabatan, a.tanggalDaftar]);
     const filename = `data-anggota-${new Date().toISOString().split("T")[0]}.csv`;
 
     const csvContent =
@@ -146,9 +147,6 @@ export default function AnggotaPage() {
       {/* Alert reminder of Rule 7 */}
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-3.5 text-xs text-blue-700 flex gap-2">
         <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-blue-500" />
-        <span>
-          <strong>Informasi Aturan (PRD-7):</strong> Setiap anggota yang terdaftar wajib merupakan mahasiswa aktif yang terdaftar resmi, dan 1 mahasiswa hanya boleh tergabung dalam 1 Unit Kegiatan Mahasiswa (UKM).
-        </span>
       </div>
 
       {/* Search Bar */}
@@ -175,6 +173,7 @@ export default function AnggotaPage() {
                 <th className="py-4.5 px-6">Nama Mahasiswa</th>
                 <th className="py-4.5 px-6">Jurusan</th>
                 <th className="py-4.5 px-6">Tergabung Di UKM</th>
+                <th className="py-4.5 px-6">Jabatan</th>
                 <th className="py-4.5 px-6">Tanggal Daftar</th>
                 <th className="py-4.5 px-6 text-right print:hidden">Aksi</th>
               </tr>
@@ -189,6 +188,7 @@ export default function AnggotaPage() {
                     <td className="py-4.5 px-6">
                       <span className="text-rose-600 font-bold">{a.namaUKM}</span>
                     </td>
+                    <td className="py-4.5 px-6 font-semibold text-zinc-800">{a.jabatan}</td>
                     <td className="py-4.5 px-6 text-xs">{a.tanggalDaftar}</td>
                     <td className="py-4.5 px-6 text-right print:hidden">
                       <button
@@ -203,7 +203,7 @@ export default function AnggotaPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-zinc-400">
+                  <td colSpan={7} className="py-12 text-center text-zinc-400">
                     Belum ada anggota resmi yang terdaftar.
                   </td>
                 </tr>

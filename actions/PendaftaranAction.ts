@@ -20,12 +20,13 @@ export async function getPendaftaranList() {
     namaMahasiswa: p.mahasiswa.nama,
     ukmId: p.ukmId,
     namaUKM: p.ukm.nama,
+    jabatan: p.jabatan,
     tanggalDaftar: p.tanggalDaftar.toISOString().split("T")[0],
     status: p.status,
   }));
 }
 
-export async function createPendaftaran(nim: string, ukmId: string) {
+export async function createPendaftaran(nim: string, ukmId: string, jabatan: string = "Anggota") {
   if (!nim || !ukmId) {
     throw new Error("Mahasiswa dan UKM wajib dipilih");
   }
@@ -69,6 +70,7 @@ export async function createPendaftaran(nim: string, ukmId: string) {
     data: {
       mahasiswaNim: nim,
       ukmId: ukmId,
+      jabatan: jabatan,
       status: "Menunggu",
     },
     include: {
@@ -83,6 +85,7 @@ export async function createPendaftaran(nim: string, ukmId: string) {
     namaMahasiswa: reg.mahasiswa.nama,
     ukmId: reg.ukmId,
     namaUKM: reg.ukm.nama,
+    jabatan: reg.jabatan,
     tanggalDaftar: reg.tanggalDaftar.toISOString().split("T")[0],
     status: reg.status,
   };
@@ -137,6 +140,7 @@ export async function processPendaftaran(id: string, action: "Approve" | "Reject
         data: {
           mahasiswaNim: reg.mahasiswaNim,
           ukmId: reg.ukmId,
+          jabatan: reg.jabatan,
           tanggalDaftar: reg.tanggalDaftar,
         },
       });

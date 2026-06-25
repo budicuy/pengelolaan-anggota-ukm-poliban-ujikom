@@ -6,9 +6,29 @@ Aplikasi ini dibangun menggunakan **Next.js 16 (App Router)**, **Tailwind CSS v4
 
 ---
 
-## 📋 1. Tahap Perancangan & Analisis (Planning & Design)
+## 🔍 1. Tahap Analisis Permasalahan (Problem Analysis)
 
-Pada tahap awal, sistem dianalisis dan dirancang untuk memetakan kebutuhan sistem, interaksi pengguna, arsitektur database, dan panduan desain visual.
+Sebelum melangkah ke tahap perancangan dan coding, dilakukan analisis terhadap kendala operasional yang terjadi pada sistem pengelolaan unit kegiatan mahasiswa di Politeknik Negeri Banjarmasin.
+
+### A. Identifikasi Permasalahan
+1. **Tidak Tercatatnya dengan Baik UKM Resmi**: 
+   Daftar organisasi UKM yang aktif di lingkungan POLIBAN sering kali dikelola secara terpisah-pisah. Akibatnya, pihak manajemen institusi (seperti Wakil Direktur 3 dan Akademik) kesulitan memverifikasi daftar UKM resmi beserta profilnya secara *real-time*.
+2. **Tidak Adanya Rekapitulasi Anggota Terpusat**:
+   Pencatatan keanggotaan mahasiswa masih berbasis dokumen fisik atau spreadsheet lokal masing-masing pengurus UKM. Hal ini mengakibatkan:
+   - Tidak adanya laporan rekapitulasi keanggotaan yang valid di tingkat institusi.
+   - Pimpinan kesulitan memantau keterlibatan mahasiswa dalam kegiatan organisasi.
+   - Risiko tinggi terjadinya manipulasi atau duplikasi data keanggotaan.
+
+### B. Solusi yang Ditawarkan
+Sistem Informasi Manajemen UKM (SIM UKM) dirancang untuk memusatkan seluruh data mahasiswa, daftar UKM, pendaftaran, dan keanggotaan resmi ke dalam satu database terintegrasi (**Neon PostgreSQL**) dengan batasan aturan bisnis (*business rules*) yang kuat:
+- **Satu Mahasiswa Maksimal Satu UKM**: Mematuhi regulasi institusi agar mahasiswa fokus dan berprestasi di satu bidang organisasi secara optimal.
+- **Ekspor dan Cetak Instan**: Menyediakan fitur rekapitulasi data anggota dalam format Excel/CSV dan layout cetak ramah kertas untuk pelaporan cepat ke pimpinan.
+
+---
+
+## 📋 2. Tahap Perancangan & Analisis Sistem (System Design & Planning)
+
+Berdasarkan hasil analisis masalah, dilakukan perancangan kebutuhan fungsional sistem, diagram kasus penggunaan (use case), arsitektur database relasional, dan desain antarmuka.
 
 ### A. Kebutuhan Fungsional (KF) & Non-Fungsional (KFN)
 
@@ -16,12 +36,12 @@ Pada tahap awal, sistem dianalisis dan dirancang untuk memetakan kebutuhan siste
 *   **KF-1: Sistem Otentikasi & Akun Tunggal (Single Role)**
     *   **KF-1.1**: Halaman masuk (*Login*) email & password.
     *   **KF-1.2**: Peran tunggal yaitu **Administrator** yang memegang kendali penuh atas semua menu (Mahasiswa, UKM, Pendaftaran, dan Anggota).
-*   **KF-2: Manajemen Data Mahasiswa (CRUD)**
+*   **KF-2: Data Mahasiswa (CRUD)**
     *   **KF-2.1**: Tampil list mahasiswa POLIBAN.
     *   **KF-2.2**: Tambah mahasiswa baru (NIM, Nama Lengkap, Jurusan).
-    *   **KF-2.3**: Update nama lengkap & jurusan. NIM permanen.
-    *   **KF-2.4**: Hapus data mahasiswa (*Cascade delete*).
-*   **KF-3: Manajemen Unit Kegiatan Mahasiswa (UKM)**
+    *   **KF-2.3**: Update nama lengkap & jurusan (NIM bersifat unik dan permanen).
+    *   **KF-2.4**: Hapus data mahasiswa (*Cascade delete* untuk menghapus pendaftaran & keanggotaan terkait).
+*   **KF-3: Data Unit Kegiatan Mahasiswa (UKM)**
     *   **KF-3.1**: Tampil list organisasi UKM POLIBAN.
     *   **KF-3.2**: Daftarkan UKM baru (Kode UKM, Nama UKM, Deskripsi).
     *   **KF-3.3**: Update nama dan deskripsi UKM.
@@ -30,13 +50,13 @@ Pada tahap awal, sistem dianalisis dan dirancang untuk memetakan kebutuhan siste
     *   **KF-4.1**: Pengajuan pendaftaran mahasiswa ke salah satu UKM.
     *   **KF-4.2**: Validasi transaksional (Mahasiswa harus terdaftar resmi & aturan 1 mahasiswa maks 1 UKM).
     *   **KF-4.3**: Pendaftaran anggota baru berstatus awal `Menunggu`.
-    *   **KF-4.4**: Verifikasi status pendaftaran (Setuju/Tolak).
+    *   **KF-4.4**: Verifikasi status pendaftaran oleh Administrator (Setuju/Tolak).
 *   **KF-5: Manajemen Anggota UKM**
-    *   **KF-5.1**: Tampil list anggota resmi beserta tanggal pendaftarannya.
+    *   **KF-5.1**: Tampil list anggota resmi beserta tanggal bergabungnya.
     *   **KF-5.2**: Pengeluaran mahasiswa dari keanggotaan UKM.
 *   **KF-6: Fitur Pencarian Data**
     *   **KF-6.1**: Kotak pencarian global di setiap tabel data.
-    *   **KF-6.2**: Pencarian data mahasiswa, UKM, pendaftaran, dan anggota aktif secara real-time.
+    *   **KF-6.2**: Pencarian data mahasiswa, UKM (berdasarkan kode, nama, deskripsi), pendaftaran, dan anggota aktif secara real-time.
 *   **KF-7: Cetak Laporan (Print Data)**
     *   **KF-7.1**: Fungsi print layout ramah kertas untuk mencetak rekapitulasi data.
 *   **KF-8: Ekspor Data ke Excel/CSV**
@@ -44,7 +64,7 @@ Pada tahap awal, sistem dianalisis dan dirancang untuk memetakan kebutuhan siste
 
 #### 2. Kebutuhan Non-Fungsional (KFN)
 *   **KFN-1: Antarmuka & Estetika Visual (Usability)**
-    *   **KFN-1.1**: Desain antarmuka warna terang (*light theme*) dengan gradasi merah-oranye-amber.
+    *   **KFN-1.1**: Desain antarmuka warna terang (*light theme*) dengan gradasi merah-oranye-amber yang mencerminkan identitas POLIBAN.
     *   **KFN-1.2**: Desain web responsif (*mobile-friendly*).
     *   **KFN-1.3**: Animasi mikro (*transition* & *hover effects*) pada tombol.
 *   **KFN-2: Kinerja & Efisiensi (Performance)**
@@ -168,7 +188,7 @@ Sistem menggunakan antarmuka **warna terang (light theme)** yang bersih dengan a
 
 ---
 
-## 🚀 2. Tahap Development & Implementasi
+## 🚀 3. Tahap Development & Implementasi
 
 Pada tahap ini, rancangan sistem diimplementasikan ke dalam kode program Next.js 16 dan disinkronkan ke server database PostgreSQL di cloud.
 
@@ -231,7 +251,7 @@ Setelah menjalankan seeder, Anda dapat login menggunakan kredensial tunggal beri
 
 ---
 
-## 📊 3. Tahap Pengujian (Testing)
+## 📊 4. Tahap Pengujian (Testing)
 
 Pengujian dilakukan untuk memverifikasi fungsionalitas sistem berjalan sesuai dengan Kebutuhan Fungsional (KF).
 

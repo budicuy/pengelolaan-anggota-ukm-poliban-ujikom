@@ -532,7 +532,7 @@ export default function App() {
   const exportToExcel = (menuType: string) => {
     let headers: string[] = [];
     let rows: string[][] = [];
-    let filename = `data-${menuType}-${new Date().toISOString().split("T")[0]}.csv`;
+    const filename = `data-${menuType}-${new Date().toISOString().split("T")[0]}.csv`;
 
     if (menuType === "mahasiswa") {
       headers = ["NIM", "Nama", "Jurusan"];

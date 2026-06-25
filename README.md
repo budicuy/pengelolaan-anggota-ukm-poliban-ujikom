@@ -99,43 +99,56 @@ flowchart LR
 Sistem memiliki 1 tabel pengguna (`User`) untuk autentikasi login dan 4 tabel data utama yang saling berelasi kuat untuk mencatat keanggotaan mahasiswa pada UKM:
 
 ```mermaid
-erDiagram
-    USER {
-        string id PK
-        string name
-        string email UK
-        string password
-        string role
-    }
-    MAHASISWA {
-        string nim PK
-        string nama
-        string jurusan
-    }
-    UKM {
-        string id PK
-        string nama
-        string deskripsi
-    }
-    PENDAFTARAN {
-        string id PK
-        string mahasiswaNim FK
-        string ukmId FK
-        date tanggalDaftar
-        string status
-    }
-    ANGGOTA {
-        string id PK
-        string mahasiswaNim FK "Unique (1-to-1)"
-        string ukmId FK
-        date tanggalDaftar
-    }
+flowchart TD
+    %% Styling
+    classDef pk fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,font-weight:bold;
+    classDef fk fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,font-weight:bold;
+    classDef normal fill:#ffffff,stroke:#e0e0e0,stroke-width:1px;
 
-    MAHASISWA ||--o| ANGGOTA : "1-to-1"
-    MAHASISWA ||--o{ PENDAFTARAN : "1-to-Many"
-    UKM ||--o{ ANGGOTA : "1-to-Many"
-    UKM ||--o{ PENDAFTARAN : "1-to-Many"
+    %% MAHASISWA Table
+    subgraph MAHASISWA["👤 Tabel Mahasiswa"]
+        direction TB
+        m_nim["🔑 nim (PK)"]:::pk
+        m_nama["nama"]:::normal
+        m_jurusan["jurusan"]:::normal
+    end
+
+    %% UKM Table
+    subgraph UKM["🏆 Tabel UKM"]
+        direction TB
+        u_id["🔑 id (PK)"]:::pk
+        u_nama["nama"]:::normal
+        u_deskripsi["deskripsi"]:::normal
+    end
+
+    %% ANGGOTA Table
+    subgraph ANGGOTA["👥 Tabel Anggota"]
+        direction TB
+        a_id["🔑 id (PK)"]:::pk
+        a_nim["🔗 mahasiswaNim (FK, Unique)"]:::fk
+        a_ukm["🔗 ukmId (FK)"]:::fk
+        a_tgl["tanggalDaftar"]:::normal
+    end
+
+    %% PENDAFTARAN Table
+    subgraph PENDAFTARAN["📝 Tabel Pendaftaran"]
+        direction TB
+        p_id["🔑 id (PK)"]:::pk
+        p_nim["🔗 mahasiswaNim (FK)"]:::fk
+        p_ukm["🔗 ukmId (FK)"]:::fk
+        p_tgl["tanggalDaftar"]:::normal
+        p_status["status"]:::normal
+    end
+
+    %% Relations between Specific Columns
+    m_nim ====|"1-to-1 (PRD-7)"|====> a_nim
+    m_nim ====|"1-to-Many"|====> p_nim
+    u_id ====|"1-to-Many"|====> a_ukm
+    u_id ====|"1-to-Many"|====> p_ukm
 ```
+
+> [!TIP]
+> **Skema Relasi Kolom Database**: Skema di atas memetakan relasi antar kolom PK (Primary Key 🔑) ke FK (Foreign Key 🔗) secara presisi menggunakan visualisasi flowchart terstruktur untuk memudahkan pemahaman integritas referensial database.
 
 #### Rincian Hubungan & Batasan Integritas:
 1. **`User`**: Menyimpan kredensial akun untuk login administrator.

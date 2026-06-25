@@ -13,7 +13,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  User,
   Shield,
   GraduationCap,
   Award,

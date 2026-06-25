@@ -34,50 +34,16 @@ Berdasarkan hasil analisis masalah, dilakukan perancangan kebutuhan fungsional s
 
 #### 1. Kebutuhan Fungsional (KF)
 *   **KF-1: Sistem Otentikasi & Akun Tunggal (Single Role)**
-    *   **KF-1.1**: Halaman masuk (*Login*) email & password.
-    *   **KF-1.2**: Peran tunggal yaitu **Administrator** yang memegang kendali penuh atas semua menu (Mahasiswa, UKM, Pendaftaran, dan Anggota).
 *   **KF-2: Data Mahasiswa (CRUD)**
-    *   **KF-2.1**: Tampil list mahasiswa POLIBAN.
-    *   **KF-2.2**: Tambah mahasiswa baru (NIM, Nama Lengkap, Jurusan).
-    *   **KF-2.3**: Update nama lengkap & jurusan (NIM bersifat unik dan permanen).
-    *   **KF-2.4**: Hapus data mahasiswa (*Cascade delete* untuk menghapus pendaftaran & keanggotaan terkait).
 *   **KF-3: Data Unit Kegiatan Mahasiswa (UKM)**
-    *   **KF-3.1**: Tampil list organisasi UKM POLIBAN.
-    *   **KF-3.2**: Daftarkan UKM baru (Kode UKM, Nama UKM, Deskripsi).
-    *   **KF-3.3**: Update nama dan deskripsi UKM.
-    *   **KF-3.4**: Hapus data UKM.
 *   **KF-4: Proses Pendaftaran Anggota Baru**
-    *   **KF-4.1**: Pengajuan pendaftaran mahasiswa ke salah satu UKM.
-    *   **KF-4.2**: Validasi transaksional (Mahasiswa harus terdaftar resmi & aturan 1 mahasiswa maks 1 UKM).
-    *   **KF-4.3**: Pendaftaran anggota baru berstatus awal `Menunggu`.
-    *   **KF-4.4**: Verifikasi status pendaftaran oleh Administrator (Setuju/Tolak).
 *   **KF-5: Manajemen Anggota UKM**
-    *   **KF-5.1**: Tampil list anggota resmi beserta tanggal bergabungnya.
-    *   **KF-5.2**: Pengeluaran mahasiswa dari keanggotaan UKM.
 *   **KF-6: Fitur Pencarian Data**
-    *   **KF-6.1**: Kotak pencarian global di setiap tabel data.
-    *   **KF-6.2**: Pencarian data mahasiswa, UKM (berdasarkan kode, nama, deskripsi), pendaftaran, dan anggota aktif secara real-time.
 *   **KF-7: Cetak Laporan (Print Data)**
-    *   **KF-7.1**: Fungsi print layout ramah kertas untuk mencetak rekapitulasi data.
 *   **KF-8: Ekspor Data ke Excel/CSV**
-    *   **KF-8.1**: Tombol ekspor instan data rekapitulasi ke format spreadsheet `.csv`.
 
 #### 2. Kebutuhan Non-Fungsional (KFN)
-*   **KFN-1: Antarmuka & Estetika Visual (Usability)**
-    *   **KFN-1.1**: Desain antarmuka warna terang (*light theme*) dengan gradasi merah-oranye-amber yang mencerminkan identitas POLIBAN.
-    *   **KFN-1.2**: Desain web responsif (*mobile-friendly*).
-    *   **KFN-1.3**: Animasi mikro (*transition* & *hover effects*) pada tombol.
-*   **KFN-2: Kinerja & Efisiensi (Performance)**
-    *   **KFN-2.1**: Waktu muat halaman pertama di bawah 2 detik.
-    *   **KFN-2.2**: Optimasi query database Neon PostgreSQL serverless.
-    *   **KFN-2.3**: Pencarian tabel dilakukan secara instan di sisi klien.
-*   **KFN-3: Keamanan Data & Sistem (Security)**
-    *   **KFN-3.1**: Dasbor dilindungi session login.
-    *   **KFN-3.2**: Kata sandi terenkripsi & tersimpan aman.
-    *   **KFN-3.3**: Kotak dialog konfirmasi pada penghapusan data penting.
-*   **KFN-4: Ketersediaan & Skalabilitas (Reliability & Scalability)**
-    *   **KFN-4.1**: Arsitektur serverless scalable Next.js + Neon DB.
-    *   **KFN-4.2**: Penggunaan Prisma `$transaction` menjamin konsistensi transaksi (atomic).
+*   **1: Antarmuka Yang Responsive**
 
 ---
 

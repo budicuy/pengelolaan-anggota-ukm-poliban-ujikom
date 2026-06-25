@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -18,13 +17,13 @@ model User {
 }
 
 model Mahasiswa {
-  nim          String        @id
-  nama         String
-  jurusan      String
-  anggota      Anggota?
-  pendaftaran  Pendaftaran[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  nim         String        @id
+  nama        String
+  jurusan     String
+  anggota     Anggota?
+  pendaftaran Pendaftaran[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model UKM {
@@ -50,12 +49,12 @@ model Pendaftaran {
 }
 
 model Anggota {
-  id               String    @id @default(uuid())
-  mahasiswaNim     String    @unique
-  mahasiswa        Mahasiswa @relation(fields: [mahasiswaNim], references: [nim], onDelete: Cascade)
-  ukmId            String
-  ukm              UKM       @relation(fields: [ukmId], references: [id], onDelete: Cascade)
-  tanggalDaftar    DateTime  @default(now())
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  mahasiswaNim  String    @unique
+  mahasiswa     Mahasiswa @relation(fields: [mahasiswaNim], references: [nim], onDelete: Cascade)
+  ukmId         String
+  ukm           UKM       @relation(fields: [ukmId], references: [id], onDelete: Cascade)
+  tanggalDaftar DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }

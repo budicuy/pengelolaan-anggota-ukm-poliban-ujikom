@@ -1,56 +1,46 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getMahasiswaList,
+  createMahasiswa,
+  updateMahasiswa,
+  deleteMahasiswa,
+} from "@/actions/MahasiswaAction";
 
 export async function GET() {
   try {
-    const list = await prisma.mahasiswa.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const list = await getMahasiswaList();
     return NextResponse.json(list);
-  } catch (error) {
-    return NextResponse.json({ error: "Gagal mengambil data mahasiswa" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Gagal mengambil data mahasiswa" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const { nim, nama, jurusan } = await request.json();
-
-    if (!nim || !nama || !jurusan) {
-      return NextResponse.json({ error: "Semua field wajib diisi" }, { status: 400 });
-    }
-
-    const existingNim = await prisma.mahasiswa.findUnique({ where: { nim } });
-    if (existingNim) {
-      return NextResponse.json({ error: "NIM sudah terdaftar" }, { status: 400 });
-    }
-
-    const mhs = await prisma.mahasiswa.create({
-      data: { nim, nama, jurusan },
-    });
-
+    const mhs = await createMahasiswa(nim, nama, jurusan);
     return NextResponse.json(mhs);
-  } catch (error) {
-    return NextResponse.json({ error: "Gagal menambahkan mahasiswa" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Gagal menambahkan mahasiswa" },
+      { status: 400 }
+    );
   }
 }
 
 export async function PUT(request: Request) {
   try {
     const { nim, nama, jurusan } = await request.json();
-
-    if (!nim || !nama || !jurusan) {
-      return NextResponse.json({ error: "Semua field wajib diisi" }, { status: 400 });
-    }
-
-    const updated = await prisma.mahasiswa.update({
-      where: { nim },
-      data: { nama, jurusan },
-    });
-
+    const updated = await updateMahasiswa(nim, nama, jurusan);
     return NextResponse.json(updated);
-  } catch (error) {
-    return NextResponse.json({ error: "Gagal memperbaharui data mahasiswa" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Gagal memperbaharui data mahasiswa" },
+      { status: 400 }
+    );
   }
 }
 
@@ -63,12 +53,12 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "NIM wajib diberikan" }, { status: 400 });
     }
 
-    await prisma.mahasiswa.delete({
-      where: { nim },
-    });
-
+    await deleteMahasiswa(nim);
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: "Gagal menghapus data mahasiswa" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Gagal menghapus data mahasiswa" },
+      { status: 500 }
+    );
   }
 }

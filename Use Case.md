@@ -18,30 +18,38 @@ Dokumen ini menjelaskan diagram dan spesifikasi kasus penggunaan (*Use Case*) si
 Berikut adalah visualisasi hubungan antara aktor **Administrator** dengan seluruh fungsi (Use Case) di dalam sistem:
 
 ```mermaid
-useCaseDiagram
-    actor Administrator as "Administrator"
+flowchart LR
+    admin["👤 Administrator"]
 
-    rectangle "SIM UKM POLIBAN" {
-        usecase UC1 as "UC-1: Login Sistem"
-        usecase UC2 as "UC-2: Mengelola Mahasiswa (CRUD)"
-        usecase UC3 as "UC-3: Mengelola UKM (CRUD)"
-        usecase UC4 as "UC-4: Mengelola Pendaftaran Anggota"
-        usecase UC5 as "UC-5: Mengelola Anggota UKM"
-        usecase UC6 as "UC-6: Pencarian Data"
-        usecase UC7 as "UC-7: Cetak Laporan (Print)"
-        usecase UC8 as "UC-8: Ekspor CSV"
-        usecase UC9 as "UC-9: Logout"
-    }
+    subgraph SIM_UKM_POLIBAN["SIM UKM POLIBAN"]
+        UC1(["UC-1: Login Sistem"])
+        UC2(["UC-2: Mengelola Mahasiswa (CRUD)"])
+        UC3(["UC-3: Mengelola UKM (CRUD)"])
+        UC4(["UC-4: Mengelola Pendaftaran Anggota"])
+        UC5(["UC-5: Mengelola Anggota UKM"])
+        UC6(["UC-6: Pencarian Data"])
+        UC7(["UC-7: Cetak Laporan (Print)"])
+        UC8(["UC-8: Ekspor CSV"])
+        UC9(["UC-9: Logout"])
+    end
 
-    Administrator --> UC1
-    Administrator --> UC2
-    Administrator --> UC3
-    Administrator --> UC4
-    Administrator --> UC5
-    Administrator --> UC6
-    Administrator --> UC7
-    Administrator --> UC8
-    Administrator --> UC9
+    admin --> UC1
+    admin --> UC2
+    admin --> UC3
+    admin --> UC4
+    admin --> UC5
+    admin --> UC6
+    admin --> UC7
+    admin --> UC8
+    admin --> UC9
+
+    %% Styling
+    classDef actor fill:#ffe0b2,stroke:#fb8c00,stroke-width:2px,color:#000;
+    classDef usecase fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000;
+    
+    class admin actor;
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9 usecase;
+    style SIM_UKM_POLIBAN fill:#f9f9f9,stroke:#666,stroke-width:2px
 ```
 
 ---

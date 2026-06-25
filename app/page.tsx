@@ -2,6 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { getMahasiswaList, createMahasiswa, updateMahasiswa, deleteMahasiswa } from "@/actions/MahasiswaAction";
+import { getUkmList, createUkm, updateUkm, deleteUkm } from "@/actions/UkmAction";
+import { getPendaftaranList, createPendaftaran, processPendaftaran } from "@/actions/PendaftaranAction";
+import { getAnggotaList, deleteAnggota } from "@/actions/AnggotaAction";
+import { getDashboardStats } from "@/actions/DashboardAction";
+import { loginUser } from "@/actions/UserAction";
 import {
   Mail,
   Lock,
@@ -142,19 +148,19 @@ export default function App() {
   // ==========================================
   const refreshData = async () => {
     try {
-      const [resMhs, resUkm, resReg, resMem, resStats] = await Promise.all([
-        fetch("/api/mahasiswa"),
-        fetch("/api/ukm"),
-        fetch("/api/pendaftaran"),
-        fetch("/api/anggota"),
-        fetch("/api/dashboard")
+      const [mhsData, ukmData, regData, memData, statsData] = await Promise.all([
+        getMahasiswaList(),
+        getUkmList(),
+        getPendaftaranList(),
+        getAnggotaList(),
+        getDashboardStats()
       ]);
 
-      if (resMhs.ok) setMahasiswaList(await resMhs.json());
-      if (resUkm.ok) setUkmList(await resUkm.json());
-      if (resReg.ok) setPendaftaranList(await resReg.json());
-      if (resMem.ok) setAnggotaList(await resMem.json());
-      if (resStats.ok) setStatsData(await resStats.json());
+      setMahasiswaList(mhsData);
+      setUkmList(ukmData);
+      setPendaftaranList(regData);
+      setAnggotaList(memData);
+      setStatsData(statsData);
     } catch (err) {
       console.error("Gagal mengambil data dari database:", err);
       showToast("Gagal menyinkronkan data dengan database", "error");
@@ -199,23 +205,12 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Email atau kata sandi salah");
-      } else {
-        localStorage.setItem("userSession", JSON.stringify(data));
-        setUser(data);
-        showToast(`Selamat datang kembali, ${data.name}!`);
-      }
-    } catch (err) {
-      setError("Gagal menghubungi server database");
+      const data = await loginUser(email, password);
+      localStorage.setItem("userSession", JSON.stringify(data));
+      setUser(data);
+      showToast(`Selamat datang kembali, ${data.name}!`);
+    } catch (err: any) {
+      setError(err.message || "Email atau kata sandi salah");
     } finally {
       setIsLoading(false);
     }
@@ -253,28 +248,13 @@ export default function App() {
     }
 
     try {
-      const res = await fetch("/api/mahasiswa", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nim: formNim,
-          nama: formNama,
-          jurusan: formJurusan,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || "Gagal mendaftarkan mahasiswa", "error");
-      } else {
-        setActiveModal(null);
-        clearMahasiswaForm();
-        showToast("Mahasiswa berhasil didaftarkan");
-        refreshData();
-      }
-    } catch (err) {
-      showToast("Koneksi server gagal", "error");
+      await createMahasiswa(formNim, formNama, formJurusan);
+      setActiveModal(null);
+      clearMahasiswaForm();
+      showToast("Mahasiswa berhasil didaftarkan");
+      refreshData();
+    } catch (err: any) {
+      showToast(err.message || "Gagal mendaftarkan mahasiswa", "error");
     }
   };
 
@@ -283,47 +263,24 @@ export default function App() {
     if (!selectedMahasiswa) return;
 
     try {
-      const res = await fetch("/api/mahasiswa", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nim: formNim,
-          nama: formNama,
-          jurusan: formJurusan,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || "Gagal memperbaharui data", "error");
-      } else {
-        setActiveModal(null);
-        clearMahasiswaForm();
-        showToast("Data mahasiswa berhasil diperbaharui");
-        refreshData();
-      }
-    } catch (err) {
-      showToast("Koneksi server gagal", "error");
+      await updateMahasiswa(formNim, formNama, formJurusan);
+      setActiveModal(null);
+      clearMahasiswaForm();
+      showToast("Data mahasiswa berhasil diperbaharui");
+      refreshData();
+    } catch (err: any) {
+      showToast(err.message || "Gagal memperbaharui data", "error");
     }
   };
 
   const handleDeleteMahasiswa = async (nim: string) => {
     if (confirm("Apakah Anda yakin ingin menghapus data mahasiswa ini?")) {
       try {
-        const res = await fetch(`/api/mahasiswa?nim=${nim}`, {
-          method: "DELETE",
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          showToast(data.error || "Gagal menghapus mahasiswa", "error");
-        } else {
-          showToast("Mahasiswa berhasil dihapus");
-          refreshData();
-        }
-      } catch (err) {
-        showToast("Koneksi server gagal", "error");
+        await deleteMahasiswa(nim);
+        showToast("Mahasiswa berhasil dihapus");
+        refreshData();
+      } catch (err: any) {
+        showToast(err.message || "Gagal menghapus mahasiswa", "error");
       }
     }
   };
@@ -354,27 +311,13 @@ export default function App() {
     }
 
     try {
-      const res = await fetch("/api/ukm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: formUkmId,
-          nama: formUkmNama,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || "Gagal menambahkan UKM", "error");
-      } else {
-        setActiveModal(null);
-        clearUkmForm();
-        showToast("Unit Kegiatan Mahasiswa berhasil ditambahkan");
-        refreshData();
-      }
-    } catch (err) {
-      showToast("Koneksi server gagal", "error");
+      await createUkm(formUkmId, formUkmNama);
+      setActiveModal(null);
+      clearUkmForm();
+      showToast("Unit Kegiatan Mahasiswa berhasil ditambahkan");
+      refreshData();
+    } catch (err: any) {
+      showToast(err.message || "Gagal menambahkan UKM", "error");
     }
   };
 
@@ -383,46 +326,24 @@ export default function App() {
     if (!selectedUkm) return;
 
     try {
-      const res = await fetch("/api/ukm", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: formUkmId,
-          nama: formUkmNama,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || "Gagal mengupdate UKM", "error");
-      } else {
-        setActiveModal(null);
-        clearUkmForm();
-        showToast("Data UKM berhasil diperbaharui");
-        refreshData();
-      }
-    } catch (err) {
-      showToast("Koneksi server gagal", "error");
+      await updateUkm(formUkmId, formUkmNama);
+      setActiveModal(null);
+      clearUkmForm();
+      showToast("Data UKM berhasil diperbaharui");
+      refreshData();
+    } catch (err: any) {
+      showToast(err.message || "Gagal mengupdate UKM", "error");
     }
   };
 
   const handleDeleteUkm = async (id: string) => {
     if (confirm("Apakah Anda yakin ingin menghapus UKM ini beserta semua datanya?")) {
       try {
-        const res = await fetch(`/api/ukm?id=${id}`, {
-          method: "DELETE",
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          showToast(data.error || "Gagal menghapus UKM", "error");
-        } else {
-          showToast("UKM berhasil dihapus");
-          refreshData();
-        }
-      } catch (err) {
-        showToast("Koneksi server gagal", "error");
+        await deleteUkm(id);
+        showToast("UKM berhasil dihapus");
+        refreshData();
+      } catch (err: any) {
+        showToast(err.message || "Gagal menghapus UKM", "error");
       }
     }
   };
@@ -451,95 +372,45 @@ export default function App() {
     }
 
     try {
-      const res = await fetch("/api/pendaftaran", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nim: formDaftarNim,
-          ukmId: formDaftarUkmId,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || "Gagal mengajukan pendaftaran", "error");
-      } else {
-        setActiveModal(null);
-        setFormDaftarNim("");
-        setFormDaftarUkmId("");
-        showToast("Pendaftaran anggota baru berhasil diajukan");
-        refreshData();
-      }
-    } catch (err) {
-      showToast("Koneksi server gagal", "error");
+      await createPendaftaran(formDaftarNim, formDaftarUkmId);
+      setActiveModal(null);
+      setFormDaftarNim("");
+      setFormDaftarUkmId("");
+      showToast("Pendaftaran anggota baru berhasil diajukan");
+      refreshData();
+    } catch (err: any) {
+      showToast(err.message || "Gagal mengajukan pendaftaran", "error");
     }
   };
 
   const handleApprovePendaftaran = async (regId: string) => {
     try {
-      const res = await fetch("/api/pendaftaran", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: regId,
-          action: "Approve",
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || "Gagal menyetujui pendaftaran", "error");
-      } else {
-        showToast("Pendaftaran anggota berhasil disetujui!");
-        refreshData();
-      }
-    } catch (err) {
-      showToast("Koneksi server gagal", "error");
+      await processPendaftaran(regId, "Approve");
+      showToast("Pendaftaran anggota berhasil disetujui!");
+      refreshData();
+    } catch (err: any) {
+      showToast(err.message || "Gagal menyetujui pendaftaran", "error");
     }
   };
 
   const handleRejectPendaftaran = async (regId: string) => {
     try {
-      const res = await fetch("/api/pendaftaran", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: regId,
-          action: "Reject",
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || "Gagal menolak pendaftaran", "error");
-      } else {
-        showToast("Pendaftaran anggota berhasil ditolak");
-        refreshData();
-      }
-    } catch (err) {
-      showToast("Koneksi server gagal", "error");
+      await processPendaftaran(regId, "Reject");
+      showToast("Pendaftaran anggota berhasil ditolak");
+      refreshData();
+    } catch (err: any) {
+      showToast(err.message || "Gagal menolak pendaftaran", "error");
     }
   };
 
   const handleDeleteAnggota = async (nim: string, ukmId: string) => {
     if (confirm("Keluarkan mahasiswa ini dari UKM?")) {
       try {
-        const res = await fetch(`/api/anggota?nim=${nim}&ukmId=${ukmId}`, {
-          method: "DELETE",
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          showToast(data.error || "Gagal mengeluarkan anggota", "error");
-        } else {
-          showToast("Anggota berhasil dikeluarkan dari UKM");
-          refreshData();
-        }
-      } catch (err) {
-        showToast("Koneksi server gagal", "error");
+        await deleteAnggota(nim, ukmId);
+        showToast("Anggota berhasil dikeluarkan dari UKM");
+        refreshData();
+      } catch (err: any) {
+        showToast(err.message || "Gagal mengeluarkan anggota", "error");
       }
     }
   };
